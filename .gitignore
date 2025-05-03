@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+env/
+venv/
+.env
+
+# Node/React
+node_modules/
+dist/
+build/
+.env.local
+
+# Docker volumes
+db_data/
+monitored_pg_data/
+
+# VSCode/Cursor/OS
+.vscode/
+.cursor/
+.DS_Store
+
+# Alembic
+alembic/versions/
+
+# Logs
+*.log
