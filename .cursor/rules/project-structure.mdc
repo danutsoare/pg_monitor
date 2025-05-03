@@ -1,0 +1,39 @@
+# Project Structure Guide
+
+This project is a web-based PostgreSQL monitoring application, organized as a monorepo with backend, frontend, and Docker support for local development and deployment.
+
+## Backend
+- The backend is in [backend/](mdc:backend/), using FastAPI and SQLAlchemy.
+- The main entry point is [app/main.py](mdc:backend/app/main.py).
+- API routes are defined in [api/](mdc:backend/app/api/).
+- Database models are in [db/models.py](mdc:backend/app/db/models.py).
+- Pydantic schemas are in [schemas/](mdc:backend/app/schemas/).
+- Business logic and snapshot services are in [services/](mdc:backend/app/services/) and [core/](mdc:backend/app/core/).
+- Database connection/session is managed in [db/session.py](mdc:backend/app/db/session.py).
+- Dependencies are listed in [requirements.txt](mdc:backend/requirements.txt).
+- Containerization is handled by [Dockerfile](mdc:backend/Dockerfile).
+
+## Frontend
+- The frontend is in [frontend/](mdc:frontend/), using React and TypeScript.
+- The entry point is [src/main.tsx](mdc:frontend/src/main.tsx), with the main app in [src/App.tsx](mdc:frontend/src/App.tsx).
+- Reusable components are in [components/](mdc:frontend/src/components/).
+- Page-level components are in [pages/](mdc:frontend/src/pages/).
+- API client logic is in [api/](mdc:frontend/src/api/).
+- Dependencies are listed in [package.json](mdc:frontend/package.json).
+- Containerization is handled by [Dockerfile](mdc:frontend/Dockerfile).
+
+## Docker & Orchestration
+- The root [docker-compose.yml](mdc:docker-compose.yml) orchestrates backend, frontend, and database containers.
+- The main PostgreSQL service is `db`, and an optional monitored instance is `monitored_pg`.
+- Environment variables are managed in [.env](mdc:.env) at the project root.
+
+## Database Schema
+- The backend database stores monitoring snapshots, session activity, statement statistics, object metadata, and lock information.
+- Snapshots are taken from PostgreSQL performance views such as `pg_stat_activity` and `pg_stat_statements`.
+- Main tables: `monitored_database`, `snapshot`, `session_activity`, `statement_stats`, `db_object`, `lock`.
+
+## Monitoring Logic
+- The backend periodically queries monitored PostgreSQL instances for activity and performance data using the above views and stores results in the local database.
+- The frontend visualizes activity over time, object metadata, lock/blocking info, and allows configuration of monitored connections.
+
+For more details on each component, see the respective directories and configuration files.
