@@ -35,39 +35,40 @@ This file tracks the implementation status of all major tasks and subtasks for t
   - [x] Create and apply initial migrations
 
 ## Phase 3: Connection Management
-- [ ] Backend: CRUD API for connections
-  - [ ] Create endpoint to add connection
-  - [ ] Create endpoint to edit connection
-  - [ ] Create endpoint to delete connection
-  - [ ] Create endpoint to list connections
-  - [ ] Secure password storage (encryption or secrets manager)
-- [ ] Frontend: Connection management page
-  - [ ] List all connections
-  - [ ] Add connection form
-  - [ ] Edit connection form
-  - [ ] Delete connection action
-  - [ ] Form validation and error handling
+- [x] Backend: CRUD API for connections
+  - [x] Create endpoint to add connection
+  - [x] Create endpoint to edit connection
+  - [x] Create endpoint to delete connection
+  - [x] Create endpoint to list connections
+  - [x] Secure password storage (encryption or secrets manager) # Hashing implemented
+- [x] Frontend: Connection management page
+  - [x] List all connections
+  - [x] Add connection form
+  - [x] Edit connection form
+  - [x] Delete connection action
+  - [x] Form validation and error handling
 
 ## Phase 4: Snapshot Service
-- [ ] Backend: Scheduler & snapshot logic
-  - [ ] Set up scheduler (Celery, APScheduler, or custom)
+- [x] Backend: Scheduler & snapshot logic # Basic implementation done
+  - [x] Set up scheduler (APScheduler)
   - [ ] For each monitored connection:
-    - [ ] Connect to PostgreSQL
-    - [ ] Query pg_stat_activity and store session data
-    - [ ] Query pg_stat_statements and store statement stats
-    - [ ] Query pg_locks and store lock info
-    - [ ] Query for object sizes and store metadata
+    - [x] Connect to PostgreSQL (via asyncpg)
+    - [x] Query pg_stat_activity and store session data
+    - [x] Query pg_stat_statements and store statement stats (if extension enabled)
+    - [x] Query pg_locks and store lock info
+    - [x] Query for object sizes and store metadata
+    # Note: Secure password retrieval for connections needs implementation
 - [ ] Testing snapshotting
-  - [ ] Test snapshotting against local PostgreSQL
+  - [x] Test snapshotting against local PostgreSQL
   - [ ] Test snapshotting against remote PostgreSQL
 
 ## Phase 5: API Endpoints for Monitoring Data
-- [ ] Activity/time series endpoints
-  - [ ] Endpoint for activity over time (for charts)
-- [ ] Session details endpoint
-- [ ] Statement stats endpoint (top queries, slow queries)
-- [ ] Object metadata/size endpoint
-- [ ] Lock/blocking info endpoint
+- [x] Activity/time series endpoints
+  - [x] Endpoint for activity over time (for charts)
+- [x] Session details endpoint
+- [x] Statement stats endpoint (top queries, slow queries)
+- [x] Object metadata/size endpoint
+- [x] Lock/blocking info endpoint
 
 ## Phase 6: Frontend Monitoring Pages
 - [ ] Main Page (Activity Chart)

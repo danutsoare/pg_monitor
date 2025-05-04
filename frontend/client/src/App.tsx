@@ -3,7 +3,7 @@ import { Routes, Route } from 'react-router-dom';
 import { ConfigProvider, App as AntApp } from 'antd'; // Use AntApp for context
 import MainLayout from './layouts/MainLayout';
 import DashboardPage from './pages/DashboardPage';
-import ConnectionsPage from './pages/ConnectionsPage';
+import ConnectionManagementPage from './pages/ConnectionManagementPage';
 import './App.css';
 
 function App() {
@@ -22,7 +22,7 @@ function App() {
         <Routes>
           <Route path="/" element={<MainLayout />}>
             <Route index element={<DashboardPage />} />
-            <Route path="connections" element={<ConnectionsPage />} />
+            <Route path="connections" element={<ConnectionManagementPage />} />
             {/* Add other routes here */}
             {/* Example: <Route path="objects" element={<ObjectsPage />} /> */}
             {/* Add a catch-all/404 route if needed */}

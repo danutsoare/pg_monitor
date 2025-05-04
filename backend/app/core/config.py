@@ -11,6 +11,9 @@ class Settings(BaseSettings):
     # CORS settings
     CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:80"]
     
+    # Scheduler settings
+    SNAPSHOT_INTERVAL_MINUTES: int = 5 # Default interval in minutes
+    
     # Database settings
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str

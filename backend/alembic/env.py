@@ -16,15 +16,18 @@ from alembic import context
 sys.path.insert(0, '.') # Add current working directory explicitly
 
 # Import Base and models
-from app.db.session import Base  # Assuming Base is defined here
-# Try importing the package first to ensure it's found
+# from app.db.session import Base  # Incorrect import
 import app.models
-from app.models.monitored_database import MonitoredDatabase
-from app.models.snapshot import Snapshot
-from app.models.session_activity import SessionActivity
-from app.models.statement_stats import StatementStats
-from app.models.db_object import DbObject
-from app.models.lock import Lock
+# from app.db.base_class import Base # Old import
+from app.db.base import Base # Correct import from base.py
+# Models are now imported in app.db.base, so Base.metadata knows about them.
+# No need to explicitly import them here unless directly referenced.
+# from app.models.database import MonitoredDatabase 
+# from app.models.snapshot import Snapshot
+# from app.models.session_activity import SessionActivity
+# from app.models.statement_stats import StatementStats
+# from app.models.db_object import DbObject
+# from app.models.lock import Lock
 from app.core.config import settings # Assuming settings object with SQLALCHEMY_DATABASE_URI property
 
 # this is the Alembic Config object, which provides

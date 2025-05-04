@@ -1,0 +1,175 @@
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy.orm import Session
+from typing import List, Any, Optional
+from datetime import datetime
+
+from app.api import deps
+from app import schemas
+from app import crud
+
+router = APIRouter()
+
+
+@router.get("/")
+async def read_monitoring_root():
+    """
+    Placeholder endpoint for monitoring root.
+    """
+    return {"message": "Monitoring endpoints root"}
+
+
+@router.get("/activity/timeseries/{db_id}", response_model=schemas.ActivityTimeSeries)
+async def get_activity_timeseries(
+    *,
+    db: Session = Depends(deps.get_db),
+    db_id: int,
+    start_time: Optional[datetime] = Query(None, description="Start time for the data range (ISO 8601 format)"),
+    end_time: Optional[datetime] = Query(None, description="End time for the data range (ISO 8601 format)")
+) -> Any:
+    """
+    Get activity counts over time for a specific database.
+    """
+    # TODO: Add validation for db_id existence?
+    # Fetch data using the CRUD function
+    activity_data = crud.monitoring.get_activity_timeseries_data(
+        db=db,
+        db_id=db_id,
+        start_time=start_time,
+        end_time=end_time
+    )
+
+    return schemas.ActivityTimeSeries(db_id=db_id, data=activity_data)
+
+
+@router.get("/sessions/{db_id}/latest", response_model=schemas.SessionDetailList)
+async def get_latest_session_details(
+    *,
+    db: Session = Depends(deps.get_db),
+    db_id: int,
+) -> Any:
+    """
+    Get detailed session information from the latest snapshot for a specific database.
+    """
+    latest_snapshot = crud.monitoring.get_latest_snapshot(db=db, db_id=db_id)
+
+    if not latest_snapshot:
+        raise HTTPException(
+            status_code=404,
+            detail=f"No snapshot found for database ID {db_id}"
+        )
+
+    session_details = crud.monitoring.get_session_details_by_snapshot(
+        db=db,
+        snapshot_id=latest_snapshot.id
+    )
+
+    return schemas.SessionDetailList(
+        db_id=db_id,
+        snapshot_id=latest_snapshot.id,
+        snapshot_time=latest_snapshot.snapshot_time,
+        sessions=session_details
+    )
+
+
+@router.get("/statements/{db_id}/latest", response_model=schemas.StatementStatList)
+async def get_latest_statement_stats(
+    *,
+    db: Session = Depends(deps.get_db),
+    db_id: int,
+    sort_by: crud.monitoring.StatementSortBy = Query(
+        crud.monitoring.StatementSortBy.total_time,
+        description="Field to sort statements by"
+    ),
+    limit: Optional[int] = Query(20, description="Maximum number of statements to return", ge=1, le=100)
+) -> Any:
+    """
+    Get statement statistics from the latest snapshot for a specific database,
+    with options for sorting and limiting results.
+    """
+    latest_snapshot = crud.monitoring.get_latest_snapshot(db=db, db_id=db_id)
+
+    if not latest_snapshot:
+        raise HTTPException(
+            status_code=404,
+            detail=f"No snapshot found for database ID {db_id}"
+        )
+
+    statement_stats = crud.monitoring.get_statement_stats_by_snapshot(
+        db=db,
+        snapshot_id=latest_snapshot.id,
+        sort_by=sort_by,
+        limit=limit
+    )
+
+    return schemas.StatementStatList(
+        db_id=db_id,
+        snapshot_id=latest_snapshot.id,
+        snapshot_time=latest_snapshot.snapshot_time,
+        statements=statement_stats
+    )
+
+
+@router.get("/objects/{db_id}/latest", response_model=schemas.DbObjectList)
+async def get_latest_db_objects(
+    *,
+    db: Session = Depends(deps.get_db),
+    db_id: int,
+    sort_by_size: bool = Query(True, description="Sort results by total size descending"),
+    limit: Optional[int] = Query(100, description="Maximum number of objects to return", ge=1, le=1000)
+) -> Any:
+    """
+    Get database object metadata and size from the latest snapshot for a specific database.
+    Allows sorting by size and limiting results.
+    """
+    latest_snapshot = crud.monitoring.get_latest_snapshot(db=db, db_id=db_id)
+
+    if not latest_snapshot:
+        raise HTTPException(
+            status_code=404,
+            detail=f"No snapshot found for database ID {db_id}"
+        )
+
+    db_objects = crud.monitoring.get_db_objects_by_snapshot(
+        db=db,
+        snapshot_id=latest_snapshot.id,
+        sort_by_size=sort_by_size,
+        limit=limit
+    )
+
+    return schemas.DbObjectList(
+        db_id=db_id,
+        snapshot_id=latest_snapshot.id,
+        snapshot_time=latest_snapshot.snapshot_time,
+        objects=db_objects
+    )
+
+
+@router.get("/locks/{db_id}/latest", response_model=schemas.LockList)
+async def get_latest_lock_info(
+    *,
+    db: Session = Depends(deps.get_db),
+    db_id: int,
+    # TODO: Add filtering parameters? (e.g., granted=false, pid=...)
+) -> Any:
+    """
+    Get lock and blocking information from the latest snapshot for a specific database.
+    """
+    latest_snapshot = crud.monitoring.get_latest_snapshot(db=db, db_id=db_id)
+
+    if not latest_snapshot:
+        raise HTTPException(
+            status_code=404,
+            detail=f"No snapshot found for database ID {db_id}"
+        )
+
+    locks = crud.monitoring.get_locks_by_snapshot(
+        db=db,
+        snapshot_id=latest_snapshot.id
+    )
+
+    return schemas.LockList(
+        db_id=db_id,
+        snapshot_id=latest_snapshot.id,
+        snapshot_time=latest_snapshot.snapshot_time,
+        locks=locks
+    ) 
