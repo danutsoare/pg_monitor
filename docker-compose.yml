@@ -19,6 +19,8 @@ services:
     depends_on:
       - db
     restart: unless-stopped
+    networks: # Assign backend to the custom network
+      - monitor-net
 
   frontend:
     build:
@@ -32,6 +34,8 @@ services:
     depends_on:
       - backend
     restart: unless-stopped
+    networks: # Assign frontend to the custom network
+      - monitor-net
 
   db:
     image: postgres:14 # Use a specific version
@@ -46,7 +50,14 @@ services:
     volumes:
       - postgres-data-prod:/var/lib/postgresql/data # Use a separate volume for prod data
     restart: unless-stopped
+    networks: # Assign db to the custom network
+      - monitor-net
 
 volumes:
   postgres-data-prod: # Define the production data volume
-    name: postgres-monitor-data-prod # Explicitly name the volume 
+    name: postgres-monitor-data-prod # Explicitly name the volume
+
+# Define the custom network
+networks:
+  monitor-net:
+    driver: bridge 

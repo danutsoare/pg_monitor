@@ -10,7 +10,7 @@ export interface Connection {
   }
 
   // Base URL for your backend API
-  const API_BASE_URL = '/api'; // Adjust if your backend is hosted elsewhere or has a prefix
+  const API_BASE_URL = '/api/v1'; // Adjust if your backend is hosted elsewhere or has a prefix
 
   // Function to get all connections
   export const getConnections = async (): Promise<Connection[]> => {

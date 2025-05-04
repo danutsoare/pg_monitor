@@ -59,13 +59,29 @@ The application consists of several components:
       ```
     - **Important:** Ensure the `DATABASE_URL` components match the `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`, and the service name (`db`) defined in `docker-compose.yml`. The `SECRET_KEY` should be changed to a strong, random string for any non-local deployment.
 
-3.  **Build and Run with Docker Compose:**
+3.  **Build, Run, and Migrate (Option 1: Automated Script):**
+    For the first time setup, you can use the provided script which handles building, starting services, waiting for the DB, and applying migrations:
     ```bash
-    docker-compose up --build -d
+    chmod +x deploy.sh
+    ./deploy.sh
     ```
-    This command builds the images for the backend and frontend (if they don't exist or have changed) and starts all the services (backend, frontend, monitoring database) in detached mode.
 
-4.  **Access the Application:**
+4.  **Build, Run, and Migrate (Option 2: Manual Steps):**
+    Alternatively, run the steps manually:
+    a.  **Build and Run with Docker Compose:**
+        ```bash
+        docker-compose up --build -d
+        ```
+        This command builds the images for the backend and frontend (if they don't exist or have changed) and starts all the services (backend, frontend, monitoring database) in detached mode.
+
+    b.  **Apply Database Migrations:**
+        Before the application can function correctly, you need to apply the database migrations to set up the necessary tables in the monitoring database.
+        ```bash
+        docker compose exec backend alembic upgrade head
+        ```
+        *Wait a few seconds after the `up` command for the database service (`db`) to initialize before running this.*
+
+5.  **Access the Application:**
     - **Frontend:** Open your web browser and navigate to `http://localhost:5173` (or the port mapped for the `frontend` service in `docker-compose.yml`).
     - **Backend API Docs (Swagger UI):** Navigate to `http://localhost:8000/docs` (or the port mapped for the `backend` service).
 

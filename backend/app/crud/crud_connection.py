@@ -6,7 +6,6 @@ from fastapi.encoders import jsonable_encoder
 from app import schemas
 from app.models import Connection # Correct import path and model name
 from app.core.security import get_password_hash # Use hashing, not encryption
-from app.models.database import MonitoredDatabase # Assuming this model exists from Phase 2
 from app.schemas.connection import ConnectionCreate, ConnectionUpdate
 from pydantic import SecretStr
 from typing import List, Optional

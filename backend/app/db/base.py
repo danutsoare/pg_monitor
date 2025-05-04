@@ -1,5 +1,8 @@
 # backend/app/db/base.py
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+
+from app.core.config import settings
 
 Base = declarative_base()
 
@@ -8,7 +11,7 @@ Base = declarative_base()
 # when the application loads or Alembic runs.
 
 # Import all the models, so that Base knows about them before Alembic runs.
-from app.models.database import MonitoredDatabase
+# from app.models.database import MonitoredDatabase # This seems incorrect, models should import Base
 
 # TODO: Uncomment these once the corresponding model files are created in app/models/
 # from app.models.snapshot import Snapshot
