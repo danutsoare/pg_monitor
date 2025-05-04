@@ -1,10 +1,10 @@
-from sqlalchemy import Column, Integer, ForeignKey, String, DateTime, Text, BigInteger
+from sqlalchemy import Column, Integer, ForeignKey, String, DateTime, Text, BigInteger, Boolean
 from sqlalchemy.orm import relationship
 
-from app.models.base import BaseModel
+from app.db.base_class import BaseClass
 
 
-class SessionActivity(BaseModel):
+class SessionActivity(BaseClass):
     __tablename__ = "session_activity"
 
     snapshot_id = Column(Integer, ForeignKey("snapshots.id"), nullable=False, index=True)

@@ -1,39 +1,41 @@
 # backend/app/crud/crud_connection.py
 
 from sqlalchemy.orm import Session
-# Adjust the import path based on your actual model location
+from fastapi.encoders import jsonable_encoder
+
+from app import schemas
+from app.models import Connection # Correct import path and model name
+from app.core.security import get_password_hash # Use hashing, not encryption
 from app.models.database import MonitoredDatabase # Assuming this model exists from Phase 2
 from app.schemas.connection import ConnectionCreate, ConnectionUpdate
-from app.core.security import get_password_hash # Import the hashing function
 from pydantic import SecretStr
 from typing import List, Optional
 
 # TODO: Add password hashing/decryption logic here
 
-def get_connection(db: Session, connection_id: int) -> Optional[MonitoredDatabase]:
+def get_connection(db: Session, connection_id: int) -> Connection | None:
     """Retrieves a single connection by its ID."""
-    return db.query(MonitoredDatabase).filter(MonitoredDatabase.id == connection_id).first()
+    return db.query(Connection).filter(Connection.id == connection_id).first()
 
-def get_connections(db: Session, skip: int = 0, limit: int = 100) -> List[MonitoredDatabase]:
+def get_connections(db: Session, skip: int = 0, limit: int = 100) -> List[Connection]:
     """Retrieves a list of connections with pagination."""
-    return db.query(MonitoredDatabase).offset(skip).limit(limit).all()
+    return db.query(Connection).offset(skip).limit(limit).all()
 
-def get_connection_by_alias(db: Session, alias: str) -> Optional[MonitoredDatabase]:
+def get_connection_by_alias(db: Session, alias: str) -> Optional[Connection]:
     """Retrieves a connection by its alias."""
-    return db.query(MonitoredDatabase).filter(MonitoredDatabase.alias == alias).first()
+    return db.query(Connection).filter(Connection.alias == alias).first()
 
-def create_connection(db: Session, connection: ConnectionCreate) -> MonitoredDatabase:
+def create_connection(db: Session, connection: ConnectionCreate) -> Connection:
     """Creates a new connection entry in the database with a hashed password."""
     hashed_password = get_password_hash(connection.password.get_secret_value())
-    db_connection = MonitoredDatabase(
+    db_connection = Connection(
         alias=connection.alias,
         hostname=connection.hostname,
         port=connection.port,
         username=connection.username,
         db_name=connection.db_name,
         # Store the hashed password
-        # The model field should be renamed to hashed_password
-        hashed_password=hashed_password
+        db_password_encrypted=hashed_password
     )
     db.add(db_connection)
     db.commit()
@@ -41,7 +43,7 @@ def create_connection(db: Session, connection: ConnectionCreate) -> MonitoredDat
     # The object returned will be mapped by SQLAlchemy. Pydantic's orm_mode handles conversion.
     return db_connection
 
-def update_connection(db: Session, connection_id: int, connection_update: ConnectionUpdate) -> Optional[MonitoredDatabase]:
+def update_connection(db: Session, connection_id: int, connection_update: ConnectionUpdate) -> Optional[Connection]:
     """Updates an existing connection, hashing the password if provided."""
     db_connection = get_connection(db, connection_id)
     if not db_connection:
@@ -52,8 +54,8 @@ def update_connection(db: Session, connection_id: int, connection_update: Connec
     # Handle password update specifically
     if "password" in update_data and update_data["password"] is not None:
         hashed_password = get_password_hash(update_data["password"].get_secret_value())
-        # Update the hashed_password field in the model
-        db_connection.hashed_password = hashed_password
+        # Update the password hash field in the model
+        db_connection.db_password_encrypted = hashed_password
         # Remove password from update_data dict to avoid errors during iteration below
         del update_data["password"]
     elif "password" in update_data:
@@ -69,7 +71,7 @@ def update_connection(db: Session, connection_id: int, connection_update: Connec
     db.refresh(db_connection)
     return db_connection
 
-def delete_connection(db: Session, connection_id: int) -> Optional[MonitoredDatabase]:
+def delete_connection(db: Session, connection_id: int) -> Optional[Connection]:
     """Deletes a connection from the database."""
     db_connection = get_connection(db, connection_id)
     if db_connection:

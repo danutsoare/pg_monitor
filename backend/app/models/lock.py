@@ -1,11 +1,13 @@
-from sqlalchemy import Column, Integer, ForeignKey, String, Boolean, BigInteger
+from sqlalchemy import Column, Integer, ForeignKey, String, Boolean, BigInteger, Text
 from sqlalchemy.orm import relationship
 
-from app.models.base import BaseModel
+# Import the common BaseClass
+from app.db.base_class import BaseClass
 
 
-class Lock(BaseModel):
-    __tablename__ = "locks"
+class Lock(BaseClass):
+    # __tablename__ = "locks"
+    # id = Column(Integer, primary_key=True, index=True)
 
     snapshot_id = Column(Integer, ForeignKey("snapshots.id"), nullable=False, index=True)
 
