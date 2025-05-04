@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import {
-  DesktopOutlined,
   DatabaseOutlined,
   PieChartOutlined,
   LockOutlined,
@@ -12,7 +11,7 @@ import {
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import { Layout, Menu, Breadcrumb, theme, Select, Space, Typography, Alert } from 'antd';
-import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
+import { Outlet, Link, useLocation } from 'react-router-dom';
 import { Connection, getConnections } from '../services/connectionApi';
 
 const { Header, Content, Footer, Sider } = Layout;
@@ -79,7 +78,6 @@ const MainLayout: React.FC = () => {
   const [errorConnections, setErrorConnections] = useState<string | null>(null);
 
   const location = useLocation();
-  const navigate = useNavigate();
   const { token: { colorBgContainer, borderRadiusLG } } = theme.useToken();
 
   useEffect(() => {
@@ -143,10 +141,6 @@ const MainLayout: React.FC = () => {
         } else {
              breadcrumbName = snippet.charAt(0).toUpperCase() + snippet.slice(1);
         }
-        const findItemLabel = (itemsToCheck: MenuItem[], key: string): string | null => {
-            return null;
-        };
-        const matchedLabel = findItemLabel(menuItems, url);
 
         return (
           <Breadcrumb.Item key={url}>

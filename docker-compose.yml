@@ -28,7 +28,7 @@ services:
       dockerfile: Dockerfile # Assumes this Dockerfile builds production assets
     container_name: postgres-monitor-frontend-prod
     ports:
-      - "5173:5173" # Or potentially port 80 if served via Nginx/other webserver in prod image
+      - "8080:80" # Map host port 8080 to Nginx container port 80
     # No code or node_modules volume mounts for production
     # Remove development-specific environment variables like CHOKIDAR_USEPOLLING
     depends_on:

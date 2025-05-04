@@ -6,10 +6,10 @@ from sqlalchemy.sql import func
 from app.db.base_class import BaseClass
 
 class Snapshot(BaseClass):
-    # __tablename__ = "snapshots"
+    __tablename__ = "snapshots"
     # id = Column(Integer, primary_key=True, index=True)
 
-    database_id = Column(Integer, ForeignKey("connections.id"), nullable=False) # Assumes Connection model table is 'connections'
+    database_id = Column(Integer, ForeignKey("monitored_databases.id"), nullable=False) # Use correct table name
     snapshot_time = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     # Relationships

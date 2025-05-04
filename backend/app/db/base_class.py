@@ -9,25 +9,10 @@ from app.db.base import Base
 class BaseClass(Base):
     """
     Common base class for SQLAlchemy models.
-    Includes an auto-generated table name and a primary key column.
+    Includes a primary key column.
+    Table name should be defined explicitly in subclasses.
     """
     __abstract__ = True
-
-    # Automatically generate __tablename__
-    @declared_attr
-    def __tablename__(cls):
-        # Converts CamelCase class name to snake_case_plural table name
-        name = re.sub(r'(?<!^)(?=[A-Z])', '_', cls.__name__).lower()
-        # Ensure pluralization (simple 's' suffix, might need refinement for irregular plurals)
-        if not name.endswith('s'):
-            name += 's'
-        elif name.endswith('ss'): # Avoid things like address -> addressses
-             pass # Keep as is if ends in 'ss'
-        elif name.endswith('ys') and len(name) > 2 and name[-3] not in 'aeiou': # e.g. activity -> activities
-            name = name[:-2] + 'ies'
-        # Add more specific pluralization rules if needed
-
-        return name
 
     id = Column(Integer, primary_key=True, index=True)
 

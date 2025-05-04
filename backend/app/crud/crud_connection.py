@@ -26,15 +26,15 @@ def get_connection_by_alias(db: Session, alias: str) -> Optional[Connection]:
 
 def create_connection(db: Session, connection: ConnectionCreate) -> Connection:
     """Creates a new connection entry in the database with a hashed password."""
-    hashed_password = get_password_hash(connection.password.get_secret_value())
+    hashed_password_val = get_password_hash(connection.password.get_secret_value())
     db_connection = Connection(
         alias=connection.alias,
         hostname=connection.hostname,
         port=connection.port,
         username=connection.username,
         db_name=connection.db_name,
-        # Store the hashed password
-        db_password_encrypted=hashed_password
+        # Store the hashed password using the correct model attribute name
+        hashed_password=hashed_password_val
     )
     db.add(db_connection)
     db.commit()
@@ -52,9 +52,9 @@ def update_connection(db: Session, connection_id: int, connection_update: Connec
 
     # Handle password update specifically
     if "password" in update_data and update_data["password"] is not None:
-        hashed_password = get_password_hash(update_data["password"].get_secret_value())
-        # Update the password hash field in the model
-        db_connection.db_password_encrypted = hashed_password
+        hashed_password_val = get_password_hash(update_data["password"].get_secret_value())
+        # Update the password hash field in the model using the correct attribute name
+        db_connection.hashed_password = hashed_password_val
         # Remove password from update_data dict to avoid errors during iteration below
         del update_data["password"]
     elif "password" in update_data:

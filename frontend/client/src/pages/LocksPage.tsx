@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Spin, Alert, Typography, Select } from 'antd';
+import { Table, Spin, Alert, Typography } from 'antd';
 import { useParams } from 'react-router-dom'; // Assuming routing provides db_id
 import { getLocks } from '../services/monitoringApi'; // Import specific function
 import { LockInfo } from '../types/monitoring'; // Import shared type
 
 const { Title } = Typography;
-const { Option } = Select; // Assuming multiple DBs might be selectable later, using useParams for now
+// const { Option } = Select; // Removed unused Option
 
 // REMOVE local definition of LockInfo
 // interface LockInfo {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
-import { Table, Spin, Alert, Typography, Input, Tag } from 'antd';
+import { Table, Alert, Typography, Input, Tag } from 'antd';
 import type { ColumnsType, TableProps } from 'antd/es/table';
 import { getDbObjects } from '../services/monitoringApi';
 import { DbObjectInfo } from '../types/monitoring';
@@ -93,7 +93,7 @@ const ObjectsPage: React.FC = () => {
           const types = [...new Set(objects.map((obj: DbObjectInfo) => obj.object_type))];
           return types.map((type: string) => ({ text: type, value: type }));
       }, [objects]),
-      onFilter: (value: string | number | boolean, record: DbObjectInfo) => record.object_type === value,
+      onFilter: (value: React.Key | boolean, record: DbObjectInfo) => record.object_type === (value as string),
       width: 180,
     },
     {

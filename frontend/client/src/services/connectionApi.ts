@@ -14,7 +14,7 @@ export interface Connection {
 
   // Function to get all connections
   export const getConnections = async (): Promise<Connection[]> => {
-    const response = await fetch(`${API_BASE_URL}/connections`);
+    const response = await fetch(`${API_BASE_URL}/connections/`);
     if (!response.ok) {
       throw new Error('Failed to fetch connections');
     }
@@ -23,7 +23,7 @@ export interface Connection {
 
   // Function to add a new connection
   export const addConnection = async (connection: Connection): Promise<Connection> => {
-    const response = await fetch(`${API_BASE_URL}/connections`, {
+    const response = await fetch(`${API_BASE_URL}/connections/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

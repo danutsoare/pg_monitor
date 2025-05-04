@@ -6,7 +6,7 @@ from app.db.base_class import BaseClass
 
 
 class Lock(BaseClass):
-    # __tablename__ = "locks"
+    __tablename__ = "locks"
     # id = Column(Integer, primary_key=True, index=True)
 
     snapshot_id = Column(Integer, ForeignKey("snapshots.id"), nullable=False, index=True)

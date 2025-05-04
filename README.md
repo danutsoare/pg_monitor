@@ -72,7 +72,7 @@ The application consists of several components:
         ```bash
         docker-compose up --build -d
         ```
-        This command builds the images for the backend and frontend (if they don't exist or have changed) and starts all the services (backend, frontend, monitoring database) in detached mode.
+        This command builds the images for the backend and frontend (using the multi-stage Dockerfile for production) and starts all the services (backend, frontend Nginx server, monitoring database) in detached mode.
 
     b.  **Apply Database Migrations:**
         Before the application can function correctly, you need to apply the database migrations to set up the necessary tables in the monitoring database.
@@ -82,8 +82,8 @@ The application consists of several components:
         *Wait a few seconds after the `up` command for the database service (`db`) to initialize before running this.*
 
 5.  **Access the Application:**
-    - **Frontend:** Open your web browser and navigate to `http://localhost:5173` (or the port mapped for the `frontend` service in `docker-compose.yml`).
-    - **Backend API Docs (Swagger UI):** Navigate to `http://localhost:8000/docs` (or the port mapped for the `backend` service).
+    - **Frontend:** Open your web browser and navigate to `http://localhost:8080` (or the host port mapped to container port 80 for the `frontend` service in `docker-compose.yml`).
+    - **Backend API Docs (Swagger UI):** Navigate to `http://localhost:8000/docs` (or the host port mapped to container port 8000 for the `backend` service).
 
 ### Initial Use
 1.  **Add a Connection:** Navigate to the "Connections" page in the frontend. Click "Add Connection" and fill in the details for the PostgreSQL instance you want to monitor. Credentials are required to connect and gather statistics.

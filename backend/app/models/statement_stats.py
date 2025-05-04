@@ -6,7 +6,7 @@ from app.db.base_class import BaseClass
 
 
 class StatementStats(BaseClass):
-    # __tablename__ = "statement_stats"
+    __tablename__ = "statement_stats"
     # id = Column(Integer, primary_key=True, index=True)
 
     snapshot_id = Column(Integer, ForeignKey("snapshots.id"), nullable=False, index=True)

@@ -6,7 +6,7 @@ from app.db.base_class import BaseClass
 
 
 class DbObject(BaseClass):
-    # __tablename__ = "db_objects"
+    __tablename__ = "db_objects"
     # id = Column(Integer, primary_key=True, index=True)
 
     snapshot_id = Column(Integer, ForeignKey("snapshots.id"), nullable=False, index=True)
