@@ -5,23 +5,23 @@ This file tracks the implementation status of all major tasks and subtasks for t
 ---
 
 ## Phase 1: Project Setup & Boilerplate
-- [ ] Repository & Directory Structure
+- [x] Repository & Directory Structure
   - [ ] Initialize git repository
   - [ ] Create backend and frontend directories
   - [ ] Add .env, .gitignore, and README
-- [ ] Docker & Compose
-  - [ ] Write Dockerfiles for backend and frontend
-  - [ ] Write docker-compose.yml for backend, frontend, and database
+- [x] Docker & Compose
+  - [x] Write Dockerfiles for backend and frontend
+  - [x] Write docker-compose.yml for backend, frontend, and database
   - [ ] Test local orchestration
-- [ ] Backend Boilerplate
-  - [ ] Set up FastAPI app structure
-  - [ ] Set up SQLAlchemy and database connection
-  - [ ] Add health check endpoint
-  - [ ] Add initial Alembic migration (if using)
-- [ ] Frontend Boilerplate
-  - [ ] Set up React + TypeScript app (Vite or CRA)
-  - [ ] Add Material-UI/Ant Design and charting library
-  - [ ] Add initial page and navigation
+- [x] Backend Boilerplate
+  - [x] Set up FastAPI app structure
+  - [x] Set up SQLAlchemy and database connection
+  - [x] Add health check endpoint
+  - [x] Add initial Alembic migration (if using)
+- [x] Frontend Boilerplate
+  - [x] Set up React + TypeScript app (Vite or CRA) using Docker
+  - [x] Add Material-UI/Ant Design and charting library
+  - [x] Add initial page and navigation
 
 ## Phase 2: Core Database & Models
 - [ ] Design Database Schema
