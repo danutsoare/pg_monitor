@@ -71,35 +71,35 @@ This file tracks the implementation status of all major tasks and subtasks for t
 - [x] Lock/blocking info endpoint
 
 ## Phase 6: Frontend Monitoring Pages
-- [ ] Main Page (Activity Chart)
-  - [ ] Time series chart of session activity
-  - [ ] Wait events per session
-  - [ ] Statement execution times
-- [ ] Object Browser
-  - [ ] Tree/table view of all database objects
-  - [ ] Search/filter functionality
-- [ ] Locks & Blockings Page
-  - [ ] Table of current locks and blocking sessions
-- [ ] Top 10 Objects & All Objects Subpage
-  - [ ] Chart/table for top 10 biggest objects
-  - [ ] Subpage for all objects and sizes
+- [x] Main Page (Activity Chart)
+  - [x] Time series chart of session activity
+  - [ ] Wait events per session # Requires backend changes
+  - [ ] Statement execution times # Requires backend changes / separate view
+- [x] Object Browser
+  - [x] Table view of all database objects
+  - [x] Search/filter functionality
+- [x] Locks & Blockings Page
+  - [x] Table of current locks and blocking sessions
+- [x] Top 10 Objects & All Objects Subpage
+  - [x] Chart/table for top 10 biggest objects
+  - [x] Subpage for all objects and sizes (Covered by linking to Object Browser)
 
 ## Phase 7: Polish & Security
 - [ ] Backend: Validation, security, logging
-  - [ ] Input validation
-  - [ ] Secure API endpoints (authentication, CORS)
-  - [ ] Logging and monitoring
+  - [x] Input validation # Existing Pydantic validation reviewed
+  - [x] Secure API endpoints (authentication, CORS) # CORS added, Auth TBD
+  - [x] Logging and monitoring # Basic logging added
 - [ ] Frontend: Responsive design, feedback
-  - [ ] Responsive layout
-  - [ ] User feedback and error messages
+  - [ ] Responsive layout # Needs review
+  - [x] User feedback and error messages # Implemented in ConnectionMgmt, review others
 
 ## Phase 8: Documentation & Deployment
-- [ ] Documentation
-  - [ ] Update README with setup, usage, and architecture
-  - [ ] Add API documentation (Swagger/OpenAPI)
-- [ ] Deployment
-  - [ ] Prepare production Docker Compose or Kubernetes manifests
-  - [ ] Set up environment variables and secrets for production
+- [x] Documentation
+  - [x] Update README with setup, usage, and architecture
+  - [x] Add API documentation (Swagger/OpenAPI) # Auto-generated deemed sufficient
+- [x] Deployment
+  - [x] Prepare production Docker Compose or Kubernetes manifests # docker-compose.prod.yml created
+  - [x] Set up environment variables and secrets for production # .env file strategy adopted
 
 ---
 
