@@ -24,15 +24,15 @@ This file tracks the implementation status of all major tasks and subtasks for t
   - [x] Add initial page and navigation
 
 ## Phase 2: Core Database & Models
-- [ ] Design Database Schema
-  - [ ] Implement models for MonitoredDatabase
-  - [ ] Implement models for Snapshot
-  - [ ] Implement models for SessionActivity
-  - [ ] Implement models for StatementStats
-  - [ ] Implement models for DbObject
-  - [ ] Implement models for Lock
-- [ ] Migrations
-  - [ ] Create and apply initial migrations
+- [x] Design Database Schema
+  - [x] Implement models for MonitoredDatabase
+  - [x] Implement models for Snapshot
+  - [x] Implement models for SessionActivity
+  - [x] Implement models for StatementStats
+  - [x] Implement models for DbObject
+  - [x] Implement models for Lock
+- [x] Migrations
+  - [x] Create and apply initial migrations
 
 ## Phase 3: Connection Management
 - [ ] Backend: CRUD API for connections
