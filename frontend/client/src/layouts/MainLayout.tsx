@@ -15,7 +15,6 @@ import { Outlet, Link, useLocation } from 'react-router-dom';
 import { Connection, getConnections } from '../services/connectionApi';
 
 const { Header, Content, Footer, Sider } = Layout;
-const { Option } = Select;
 const { Text } = Typography;
 
 type MenuItem = Required<MenuProps>['items'][number];
@@ -134,7 +133,7 @@ const MainLayout: React.FC = () => {
         const knownMonitoringPages = ['locks', 'activity', 'objects', 'top-objects'];
 
         if (index === 1 && knownMonitoringPages.includes(pageType)) {
-            const dbName = connections.find((c: Connection) => String(c.id) === selectedDbId)?.name;
+            const dbName = connections.find((c: Connection) => String(c.id) === selectedDbId)?.alias;
             breadcrumbName = selectedDbId ? `DB: ${dbName || selectedDbId}` : snippet;
         } else if (index === 0 && knownMonitoringPages.includes(pageType)) {
              breadcrumbName = pageType.split('-').map((word: string) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
@@ -173,8 +172,13 @@ const MainLayout: React.FC = () => {
                onChange={handleDbSelectionChange}
                disabled={loadingConnections || !!errorConnections || connections.length === 0}
              >
-               {connections.map((conn: Connection) => (
-                 <Option key={conn.id} value={String(conn.id)}>{conn.name} ({conn.dbname}@{conn.host})</Option>
+               {loadingConnections && <Select.Option key="loading">Loading...</Select.Option>}
+               {errorConnections && <Select.Option key="error" disabled>Error</Select.Option>}
+               {connections && connections.length === 0 && !loadingConnections && <Select.Option key="none" disabled>No connections</Select.Option>}
+               {connections && connections.map((conn: Connection) => (
+                 <Select.Option key={conn.id} value={String(conn.id)}>
+                   {conn.alias} ({conn.db_name}@{conn.hostname})
+                 </Select.Option>
                ))}
              </Select>
              {errorConnections && <Alert message={errorConnections} type="error" showIcon/>}

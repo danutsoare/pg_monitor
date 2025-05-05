@@ -1,11 +1,11 @@
 // Define the Connection interface matching the form and list components
 export interface Connection {
     id?: number;
-    name: string;
-    host: string;
+    alias: string;
+    hostname: string;
     port: number;
-    user: string;
-    dbname: string;
+    username: string;
+    db_name: string;
     password?: string;
   }
 

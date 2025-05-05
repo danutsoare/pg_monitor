@@ -15,14 +15,14 @@ const ConnectionsList: React.FC<ConnectionsListProps> = ({ connections, onEdit, 
   const columns: ColumnsType<Connection> = [
     {
       title: 'Name',
-      dataIndex: 'name',
-      key: 'name',
-      sorter: (a, b) => a.name.localeCompare(b.name),
+      dataIndex: 'alias',
+      key: 'alias',
+      sorter: (a, b) => a.alias.localeCompare(b.alias),
     },
     {
       title: 'Host',
-      dataIndex: 'host',
-      key: 'host',
+      dataIndex: 'hostname',
+      key: 'hostname',
     },
     {
       title: 'Port',
@@ -36,8 +36,8 @@ const ConnectionsList: React.FC<ConnectionsListProps> = ({ connections, onEdit, 
     },
     {
       title: 'Database',
-      dataIndex: 'dbname',
-      key: 'dbname',
+      dataIndex: 'db_name',
+      key: 'db_name',
     },
     {
       title: 'Action',

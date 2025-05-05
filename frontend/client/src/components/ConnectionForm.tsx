@@ -23,19 +23,35 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({ initialData, onSave, on
   }, [initialData, form]);
 
   const handleFinish = async (values: any) => {
-    // Antd form passes all values, map them to Connection type expected by onSave
-    // Assuming the form field names match the Connection interface keys
+    // Antd form passes all values
+
+    // Explicitly check password, backend requires a non-empty string for create
+    if (!values.password || !values.password.trim()) {
+        // This should ideally be caught by form validation, but double-check
+        console.error("Password cannot be empty.");
+        // Optionally: form.setFields([{ name: 'password', errors: ['Password is required!'] }]);
+        return; // Prevent submission
+    }
+
     const connectionData: Connection = {
-      id: initialData?.id, // Include id if editing
-      name: values.name,
-      host: values.host,
-      port: values.port,
-      user: values.user,
-      dbname: values.dbname,
-      password: values.password || undefined, // Send undefined if empty, not empty string
+      id: initialData?.id,
+      alias: values.alias,
+      hostname: values.hostname,
+      port: values.port, // InputNumber should provide a number
+      username: values.username,
+      db_name: values.db_name,
+      // Ensure password is a string, not undefined (it passed the check above)
+      password: values.password,
     };
-    await onSave(connectionData); // Let the parent handle success/error messaging and modal closing
-    form.resetFields(); // Reset form after successful save
+
+    try {
+        await onSave(connectionData);
+        form.resetFields(); // Reset form only on successful save
+    } catch (error) {
+        console.error("Error saving connection:", error);
+        // Error handling (e.g., messageApi.error) is likely in the parent component's onSave
+        // Keep the form populated so the user doesn't lose input
+    }
   };
 
   return (
@@ -47,7 +63,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({ initialData, onSave, on
       autoComplete="off"
     >
       <Form.Item
-        name="name"
+        name="alias"
         label="Connection Name"
         rules={[{ required: true, message: 'Please input a name for the connection!' }]}
       >
@@ -55,7 +71,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({ initialData, onSave, on
       </Form.Item>
 
       <Form.Item
-        name="host"
+        name="hostname"
         label="Host"
         rules={[{ required: true, message: 'Please input the database host!' }]}
       >
@@ -74,7 +90,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({ initialData, onSave, on
       </Form.Item>
 
       <Form.Item
-        name="user"
+        name="username"
         label="Username"
         rules={[{ required: true, message: 'Please input the database username!' }]}
       >
@@ -82,7 +98,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({ initialData, onSave, on
       </Form.Item>
 
       <Form.Item
-        name="dbname"
+        name="db_name"
         label="Database Name"
         rules={[{ required: true, message: 'Please input the database name!' }]}
       >
