@@ -15,7 +15,7 @@ class Connection(BaseClass):
     port = Column(Integer, nullable=False, default=5432)
     db_name = Column(String, nullable=False) # Renamed from dbname
     username = Column(String, nullable=False)
-    hashed_password = Column(String, nullable=False)  # Renamed from password_encrypted
+    encrypted_password = Column(String, nullable=False)  # Renamed from hashed_password
     # is_active = Column(Boolean, default=True) # Removed, does not exist in DB
     # is_monitored = Column(Boolean, default=True)  # Removed, does not exist in DB
 

@@ -218,6 +218,7 @@ async def take_snapshot(db_conn_details: dict):
 
                 # 5. Process and store StatementStats records
                 for record in statements_records:
+                    # Map pg_stat_statements columns to model attributes
                     statement_stats = StatementStats(
                         snapshot_id=snapshot_id,
                         userid=record.get('userid'),
@@ -225,11 +226,11 @@ async def take_snapshot(db_conn_details: dict):
                         queryid=record.get('queryid'),
                         query=record.get('query'),
                         calls=record.get('calls'),
-                        total_exec_time=record.get('total_exec_time'),
-                        min_exec_time=record.get('min_exec_time'),
-                        max_exec_time=record.get('max_exec_time'),
-                        mean_exec_time=record.get('mean_exec_time'),
-                        stddev_exec_time=record.get('stddev_exec_time'),
+                        total_time=record.get('total_exec_time'), # Corrected: total_time <- total_exec_time
+                        min_time=record.get('min_exec_time'),     # Corrected: min_time <- min_exec_time
+                        max_time=record.get('max_exec_time'),     # Corrected: max_time <- max_exec_time
+                        mean_time=record.get('mean_exec_time'),    # Corrected: mean_time <- mean_exec_time
+                        stddev_time=record.get('stddev_exec_time'),# Corrected: stddev_time <- stddev_exec_time
                         rows=record.get('rows'),
                         shared_blks_hit=record.get('shared_blks_hit'),
                         shared_blks_read=record.get('shared_blks_read'),
@@ -243,24 +244,20 @@ async def take_snapshot(db_conn_details: dict):
                         temp_blks_written=record.get('temp_blks_written'),
                         blk_read_time=record.get('blk_read_time'),
                         blk_write_time=record.get('blk_write_time'),
-                        toplevel=record.get('toplevel'),
-                        plans=record.get('plans'),
-                        total_plan_time=record.get('total_plan_time'),
-                        min_plan_time=record.get('min_plan_time'),
-                        max_plan_time=record.get('max_plan_time'),
-                        mean_plan_time=record.get('mean_plan_time'),
-                        stddev_plan_time=record.get('stddev_plan_time'),
-                        wal_records=record.get('wal_records'),
-                        wal_fpi=record.get('wal_fpi'),
-                        wal_bytes=record.get('wal_bytes'),
-                        jit_functions=record.get('jit_functions'),
-                        jit_generation_time=record.get('jit_generation_time'),
-                        jit_inlining_count=record.get('jit_inlining_count'),
-                        jit_inlining_time=record.get('jit_inlining_time'),
-                        jit_optimization_count=record.get('jit_optimization_count'),
-                        jit_optimization_time=record.get('jit_optimization_time'),
-                        jit_emission_count=record.get('jit_emission_count'),
-                        jit_emission_time=record.get('jit_emission_time'),
+                        # --- Handle potential newer fields ---
+                        # The following fields might not exist in older PG versions or if pg_stat_statements is older
+                        # Add them conditionally or handle potential KeyErrors if necessary.
+                        # We use .get() which returns None if key doesn't exist, preventing errors.
+                        # toplevel=record.get('toplevel'), # Uncomment if model supports it
+                        # total_plan_time=record.get('total_plan_time'), # Check model field name
+                        # min_plan_time=record.get('min_plan_time'),     # Check model field name
+                        # max_plan_time=record.get('max_plan_time'),     # Check model field name
+                        # mean_plan_time=record.get('mean_plan_time'),    # Check model field name
+                        # stddev_plan_time=record.get('stddev_plan_time'),# Check model field name
+                        # wal_records=record.get('wal_records'),
+                        # wal_fpi=record.get('wal_fpi'),
+                        # wal_bytes=record.get('wal_bytes')
+                        # JIT stats can also be added if needed/available
                     )
                     app_db.add(statement_stats)
                 statements_added = len(statements_records)

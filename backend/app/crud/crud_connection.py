@@ -5,7 +5,8 @@ from fastapi.encoders import jsonable_encoder
 
 from app import schemas
 from app.models import Connection # Correct import path and model name
-from app.core.security import get_password_hash # Use hashing, not encryption
+# from app.core.security import get_password_hash # Use hashing, not encryption
+from app.core.security import encrypt # Use new encrypt function
 from app.schemas.connection import ConnectionCreate, ConnectionUpdate
 from pydantic import SecretStr
 from typing import List, Optional
@@ -26,7 +27,13 @@ def get_connection_by_alias(db: Session, alias: str) -> Optional[Connection]:
 
 def create_connection(db: Session, connection: ConnectionCreate) -> Connection:
     """Creates a new connection entry in the database with a hashed password."""
-    hashed_password_val = get_password_hash(connection.password.get_secret_value())
+    # hashed_password_val = get_password_hash(connection.password.get_secret_value())
+    encrypted_password_val = encrypt(connection.password.get_secret_value())
+    if encrypted_password_val is None:
+        # Handle encryption failure (e.g., key missing or encryption error)
+        # Depending on requirements, might raise an exception or return None
+        raise ValueError("Failed to encrypt password during connection creation.")
+        
     db_connection = Connection(
         alias=connection.alias,
         hostname=connection.hostname,
@@ -34,7 +41,8 @@ def create_connection(db: Session, connection: ConnectionCreate) -> Connection:
         username=connection.username,
         db_name=connection.db_name,
         # Store the hashed password using the correct model attribute name
-        hashed_password=hashed_password_val
+        # hashed_password=hashed_password_val
+        encrypted_password=encrypted_password_val # Use correct model attribute
     )
     db.add(db_connection)
     db.commit()
@@ -52,9 +60,15 @@ def update_connection(db: Session, connection_id: int, connection_update: Connec
 
     # Handle password update specifically
     if "password" in update_data and update_data["password"] is not None:
-        hashed_password_val = get_password_hash(update_data["password"].get_secret_value())
+        # hashed_password_val = get_password_hash(update_data["password"].get_secret_value())
+        encrypted_password_val = encrypt(update_data["password"].get_secret_value())
+        if encrypted_password_val is None:
+            # Handle encryption failure
+            raise ValueError("Failed to encrypt password during connection update.")
+            
         # Update the password hash field in the model using the correct attribute name
-        db_connection.hashed_password = hashed_password_val
+        # db_connection.hashed_password = hashed_password_val
+        db_connection.encrypted_password = encrypted_password_val # Use correct model attribute
         # Remove password from update_data dict to avoid errors during iteration below
         del update_data["password"]
     elif "password" in update_data:

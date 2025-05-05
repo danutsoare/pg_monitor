@@ -9,3 +9,5 @@ python-dotenv==1.0.0
 asyncpg==0.28.0
 passlib[bcrypt]
 APScheduler
+python-jose[cryptography]
+cryptography

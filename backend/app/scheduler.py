@@ -4,12 +4,15 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from apscheduler.executors.asyncio import AsyncIOExecutor
 import asyncio # Import asyncio
+import os # Import os module
 
 from app.core.config import settings
 # Import necessary functions/models
 from app.db.session import SessionLocal # For accessing app DB
 from app.services.snapshot_service import take_snapshot # The job to run
 from app.crud.crud_connection import get_connections # To get monitored DBs
+# from app.core.security import get_password_hash # Original comment, can be removed
+from app.core.security import decrypt # Import decrypt function
 # TODO: Implement secure password retrieval instead of passing hashed password
 # from app.core.security import decrypt_password # Placeholder
 
@@ -88,20 +91,18 @@ async def trigger_snapshot_runs():
         logger.info(f"Scheduling snapshots for {len(active_dbs)} active databases.")
 
         for db_conn in active_dbs:
-            # !!! SECURITY WARNING !!!
-            # We need the PLAINTEXT password here. db_conn.hashed_password is NOT usable.
-            # This needs a proper solution (Vault, env vars, Fernet encryption+decryption).
-            # Using a placeholder/dummy value for now.
-            plain_password = "PLACEHOLDER_PASSWORD" # Replace with secure retrieval
-            
-            # --- TEMPORARY HACK FOR TESTING --- REMOVED
-            # if db_conn.id == 1: # Assuming ID 1 is our test DB
-            #     plain_password = "testpassword"
-            # else:
-            #     # For other DBs, we still don't have a real password retrieval method
-            #     # Use placeholder or fetch from env/config if available for them
-            #     plain_password = "PLACEHOLDER_FOR_OTHER_DBS"
-            # --- END TEMPORARY HACK --- 
+            # Retrieve encrypted password and decrypt it
+            if not hasattr(db_conn, 'encrypted_password') or not db_conn.encrypted_password:
+                logger.warning(f"No encrypted password found for database ID {db_conn.id} ({db_conn.alias}). Skipping snapshot.")
+                continue
+
+            plain_password = decrypt(db_conn.encrypted_password)
+
+            if not plain_password:
+                logger.error(f"Failed to decrypt password for database ID {db_conn.id} ({db_conn.alias}). Check ENCRYPTION_KEY and stored password data. Skipping snapshot.")
+                continue # Skip scheduling for this DB if decryption fails
+            else:
+                logger.debug(f"Successfully decrypted password for database ID {db_conn.id}")
 
             conn_details = {
                 "id": db_conn.id,
