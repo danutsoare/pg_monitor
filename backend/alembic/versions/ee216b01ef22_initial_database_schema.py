@@ -37,151 +37,151 @@ def upgrade() -> None:
     op.create_index(op.f('ix_monitored_databases_name'), 'monitored_databases', ['name'], unique=False)
     
     # Temporarily comment out other tables until their models are defined and imported in base.py
-    # op.create_table('snapshots',
-    # sa.Column('database_id', sa.Integer(), nullable=False),
-    # sa.Column('snapshot_time', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
-    # sa.Column('id', sa.Integer(), nullable=False),
-    # sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
-    # sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
-    # sa.ForeignKeyConstraint(['database_id'], ['monitored_databases.id'], ),
-    # sa.PrimaryKeyConstraint('id')
-    # )
-    # op.create_index(op.f('ix_snapshots_database_id'), 'snapshots', ['database_id'], unique=False)
-    # op.create_index(op.f('ix_snapshots_id'), 'snapshots', ['id'], unique=False)
-    # op.create_table('db_objects',
-    # sa.Column('snapshot_id', sa.Integer(), nullable=False),
-    # sa.Column('object_type', sa.String(), nullable=False),
-    # sa.Column('schema_name', sa.String(), nullable=False),
-    # sa.Column('object_name', sa.String(), nullable=False),
-    # sa.Column('total_size_bytes', sa.BigInteger(), nullable=True),
-    # sa.Column('table_size_bytes', sa.BigInteger(), nullable=True),
-    # sa.Column('index_size_bytes', sa.BigInteger(), nullable=True),
-    # sa.Column('toast_size_bytes', sa.BigInteger(), nullable=True),
-    # sa.Column('id', sa.Integer(), nullable=False),
-    # sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
-    # sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
-    # sa.ForeignKeyConstraint(['snapshot_id'], ['snapshots.id'], ),
-    # sa.PrimaryKeyConstraint('id')
-    # )
-    # op.create_index(op.f('ix_db_objects_id'), 'db_objects', ['id'], unique=False)
-    # op.create_index(op.f('ix_db_objects_snapshot_id'), 'db_objects', ['snapshot_id'], unique=False)
-    # op.create_table('locks',
-    # sa.Column('snapshot_id', sa.Integer(), nullable=False),
-    # sa.Column('locktype', sa.String(), nullable=True),
-    # sa.Column('database', sa.BigInteger(), nullable=True),
-    # sa.Column('relation', sa.BigInteger(), nullable=True),
-    # sa.Column('page', sa.Integer(), nullable=True),
-    # sa.Column('tuple', sa.Integer(), nullable=True),
-    # sa.Column('virtualxid', sa.String(), nullable=True),
-    # sa.Column('transactionid', sa.String(), nullable=True),
-    # sa.Column('classid', sa.BigInteger(), nullable=True),
-    # sa.Column('objid', sa.BigInteger(), nullable=True),
-    # sa.Column('objsubid', sa.Integer(), nullable=True),
-    # sa.Column('virtualtransaction', sa.String(), nullable=True),
-    # sa.Column('pid', sa.Integer(), nullable=True),
-    # sa.Column('mode', sa.String(), nullable=True),
-    # sa.Column('granted', sa.Boolean(), nullable=True),
-    # sa.Column('fastpath', sa.Boolean(), nullable=True),
-    # sa.Column('waitstart', sa.String(), nullable=True),
-    # sa.Column('id', sa.Integer(), nullable=False),
-    # sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
-    # sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
-    # sa.ForeignKeyConstraint(['snapshot_id'], ['snapshots.id'], ),
-    # sa.PrimaryKeyConstraint('id')
-    # )
-    # op.create_index(op.f('ix_locks_id'), 'locks', ['id'], unique=False)
-    # op.create_index(op.f('ix_locks_pid'), 'locks', ['pid'], unique=False)
-    # op.create_index(op.f('ix_locks_snapshot_id'), 'locks', ['snapshot_id'], unique=False)
-    # op.create_table('session_activity',
-    # sa.Column('snapshot_id', sa.Integer(), nullable=False),
-    # sa.Column('datid', sa.BigInteger(), nullable=True),
-    # sa.Column('datname', sa.String(), nullable=True),
-    # sa.Column('pid', sa.Integer(), nullable=True),
-    # sa.Column('usesysid', sa.BigInteger(), nullable=True),
-    # sa.Column('usename', sa.String(), nullable=True),
-    # sa.Column('application_name', sa.String(), nullable=True),
-    # sa.Column('client_addr', sa.String(), nullable=True),
-    # sa.Column('client_hostname', sa.String(), nullable=True),
-    # sa.Column('client_port', sa.Integer(), nullable=True),
-    # sa.Column('backend_start', sa.DateTime(timezone=True), nullable=True),
-    # sa.Column('xact_start', sa.DateTime(timezone=True), nullable=True),
-    # sa.Column('query_start', sa.DateTime(timezone=True), nullable=True),
-    # sa.Column('state_change', sa.DateTime(timezone=True), nullable=True),
-    # sa.Column('wait_event_type', sa.String(), nullable=True),
-    # sa.Column('wait_event', sa.String(), nullable=True),
-    # sa.Column('state', sa.String(), nullable=True),
-    # sa.Column('backend_xid', sa.String(), nullable=True),
-    # sa.Column('backend_xmin', sa.String(), nullable=True),
-    # sa.Column('query_id', sa.BigInteger(), nullable=True),
-    # sa.Column('query', sa.Text(), nullable=True),
-    # sa.Column('backend_type', sa.String(), nullable=True),
-    # sa.Column('id', sa.Integer(), nullable=False),
-    # sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
-    # sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
-    # sa.ForeignKeyConstraint(['snapshot_id'], ['snapshots.id'], ),
-    # sa.PrimaryKeyConstraint('id')
-    # )
-    # op.create_index(op.f('ix_session_activity_id'), 'session_activity', ['id'], unique=False)
-    # op.create_index(op.f('ix_session_activity_pid'), 'session_activity', ['pid'], unique=False)
-    # op.create_index(op.f('ix_session_activity_snapshot_id'), 'session_activity', ['snapshot_id'], unique=False)
-    # op.create_table('statement_stats',
-    # sa.Column('snapshot_id', sa.Integer(), nullable=False),
-    # sa.Column('userid', sa.BigInteger(), nullable=True),
-    # sa.Column('dbid', sa.BigInteger(), nullable=True),
-    # sa.Column('queryid', sa.BigInteger(), nullable=True),
-    # sa.Column('query', sa.Text(), nullable=True),
-    # sa.Column('calls', sa.BigInteger(), nullable=True),
-    # sa.Column('total_time', sa.Float(), nullable=True),
-    # sa.Column('min_time', sa.Float(), nullable=True),
-    # sa.Column('max_time', sa.Float(), nullable=True),
-    # sa.Column('mean_time', sa.Float(), nullable=True),
-    # sa.Column('stddev_time', sa.Float(), nullable=True),
-    # sa.Column('rows', sa.BigInteger(), nullable=True),
-    # sa.Column('shared_blks_hit', sa.BigInteger(), nullable=True),
-    # sa.Column('shared_blks_read', sa.BigInteger(), nullable=True),
-    # sa.Column('shared_blks_dirtied', sa.BigInteger(), nullable=True),
-    # sa.Column('shared_blks_written', sa.BigInteger(), nullable=True),
-    # sa.Column('local_blks_hit', sa.BigInteger(), nullable=True),
-    # sa.Column('local_blks_read', sa.BigInteger(), nullable=True),
-    # sa.Column('local_blks_dirtied', sa.BigInteger(), nullable=True),
-    # sa.Column('local_blks_written', sa.BigInteger(), nullable=True),
-    # sa.Column('temp_blks_read', sa.BigInteger(), nullable=True),
-    # sa.Column('temp_blks_written', sa.BigInteger(), nullable=True),
-    # sa.Column('blk_read_time', sa.Float(), nullable=True),
-    # sa.Column('blk_write_time', sa.Float(), nullable=True),
-    # sa.Column('id', sa.Integer(), nullable=False),
-    # sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
-    # sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
-    # sa.ForeignKeyConstraint(['snapshot_id'], ['snapshots.id'], ),
-    # sa.PrimaryKeyConstraint('id')
-    # )
-    # op.create_index(op.f('ix_statement_stats_id'), 'statement_stats', ['id'], unique=False)
-    # op.create_index(op.f('ix_statement_stats_queryid'), 'statement_stats', ['queryid'], unique=False)
-    # op.create_index(op.f('ix_statement_stats_snapshot_id'), 'statement_stats', ['snapshot_id'], unique=False)
+    op.create_table('snapshots',
+    sa.Column('database_id', sa.Integer(), nullable=False),
+    sa.Column('snapshot_time', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
+    sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
+    sa.ForeignKeyConstraint(['database_id'], ['monitored_databases.id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_index(op.f('ix_snapshots_database_id'), 'snapshots', ['database_id'], unique=False)
+    op.create_index(op.f('ix_snapshots_id'), 'snapshots', ['id'], unique=False)
+    op.create_table('db_objects',
+    sa.Column('snapshot_id', sa.Integer(), nullable=False),
+    sa.Column('object_type', sa.String(), nullable=False),
+    sa.Column('schema_name', sa.String(), nullable=False),
+    sa.Column('object_name', sa.String(), nullable=False),
+    sa.Column('total_size_bytes', sa.BigInteger(), nullable=True),
+    sa.Column('table_size_bytes', sa.BigInteger(), nullable=True),
+    sa.Column('index_size_bytes', sa.BigInteger(), nullable=True),
+    sa.Column('toast_size_bytes', sa.BigInteger(), nullable=True),
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
+    sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
+    sa.ForeignKeyConstraint(['snapshot_id'], ['snapshots.id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_index(op.f('ix_db_objects_id'), 'db_objects', ['id'], unique=False)
+    op.create_index(op.f('ix_db_objects_snapshot_id'), 'db_objects', ['snapshot_id'], unique=False)
+    op.create_table('locks',
+    sa.Column('snapshot_id', sa.Integer(), nullable=False),
+    sa.Column('locktype', sa.String(), nullable=True),
+    sa.Column('database', sa.BigInteger(), nullable=True),
+    sa.Column('relation', sa.BigInteger(), nullable=True),
+    sa.Column('page', sa.Integer(), nullable=True),
+    sa.Column('tuple', sa.Integer(), nullable=True),
+    sa.Column('virtualxid', sa.String(), nullable=True),
+    sa.Column('transactionid', sa.String(), nullable=True),
+    sa.Column('classid', sa.BigInteger(), nullable=True),
+    sa.Column('objid', sa.BigInteger(), nullable=True),
+    sa.Column('objsubid', sa.Integer(), nullable=True),
+    sa.Column('virtualtransaction', sa.String(), nullable=True),
+    sa.Column('pid', sa.Integer(), nullable=True),
+    sa.Column('mode', sa.String(), nullable=True),
+    sa.Column('granted', sa.Boolean(), nullable=True),
+    sa.Column('fastpath', sa.Boolean(), nullable=True),
+    sa.Column('waitstart', sa.String(), nullable=True),
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
+    sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
+    sa.ForeignKeyConstraint(['snapshot_id'], ['snapshots.id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_index(op.f('ix_locks_id'), 'locks', ['id'], unique=False)
+    op.create_index(op.f('ix_locks_pid'), 'locks', ['pid'], unique=False)
+    op.create_index(op.f('ix_locks_snapshot_id'), 'locks', ['snapshot_id'], unique=False)
+    op.create_table('session_activity',
+    sa.Column('snapshot_id', sa.Integer(), nullable=False),
+    sa.Column('datid', sa.BigInteger(), nullable=True),
+    sa.Column('datname', sa.String(), nullable=True),
+    sa.Column('pid', sa.Integer(), nullable=True),
+    sa.Column('usesysid', sa.BigInteger(), nullable=True),
+    sa.Column('usename', sa.String(), nullable=True),
+    sa.Column('application_name', sa.String(), nullable=True),
+    sa.Column('client_addr', sa.String(), nullable=True),
+    sa.Column('client_hostname', sa.String(), nullable=True),
+    sa.Column('client_port', sa.Integer(), nullable=True),
+    sa.Column('backend_start', sa.DateTime(timezone=True), nullable=True),
+    sa.Column('xact_start', sa.DateTime(timezone=True), nullable=True),
+    sa.Column('query_start', sa.DateTime(timezone=True), nullable=True),
+    sa.Column('state_change', sa.DateTime(timezone=True), nullable=True),
+    sa.Column('wait_event_type', sa.String(), nullable=True),
+    sa.Column('wait_event', sa.String(), nullable=True),
+    sa.Column('state', sa.String(), nullable=True),
+    sa.Column('backend_xid', sa.String(), nullable=True),
+    sa.Column('backend_xmin', sa.String(), nullable=True),
+    sa.Column('query_id', sa.BigInteger(), nullable=True),
+    sa.Column('query', sa.Text(), nullable=True),
+    sa.Column('backend_type', sa.String(), nullable=True),
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
+    sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
+    sa.ForeignKeyConstraint(['snapshot_id'], ['snapshots.id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_index(op.f('ix_session_activity_id'), 'session_activity', ['id'], unique=False)
+    op.create_index(op.f('ix_session_activity_pid'), 'session_activity', ['pid'], unique=False)
+    op.create_index(op.f('ix_session_activity_snapshot_id'), 'session_activity', ['snapshot_id'], unique=False)
+    op.create_table('statement_stats',
+    sa.Column('snapshot_id', sa.Integer(), nullable=False),
+    sa.Column('userid', sa.BigInteger(), nullable=True),
+    sa.Column('dbid', sa.BigInteger(), nullable=True),
+    sa.Column('queryid', sa.BigInteger(), nullable=True),
+    sa.Column('query', sa.Text(), nullable=True),
+    sa.Column('calls', sa.BigInteger(), nullable=True),
+    sa.Column('total_time', sa.Float(), nullable=True),
+    sa.Column('min_time', sa.Float(), nullable=True),
+    sa.Column('max_time', sa.Float(), nullable=True),
+    sa.Column('mean_time', sa.Float(), nullable=True),
+    sa.Column('stddev_time', sa.Float(), nullable=True),
+    sa.Column('rows', sa.BigInteger(), nullable=True),
+    sa.Column('shared_blks_hit', sa.BigInteger(), nullable=True),
+    sa.Column('shared_blks_read', sa.BigInteger(), nullable=True),
+    sa.Column('shared_blks_dirtied', sa.BigInteger(), nullable=True),
+    sa.Column('shared_blks_written', sa.BigInteger(), nullable=True),
+    sa.Column('local_blks_hit', sa.BigInteger(), nullable=True),
+    sa.Column('local_blks_read', sa.BigInteger(), nullable=True),
+    sa.Column('local_blks_dirtied', sa.BigInteger(), nullable=True),
+    sa.Column('local_blks_written', sa.BigInteger(), nullable=True),
+    sa.Column('temp_blks_read', sa.BigInteger(), nullable=True),
+    sa.Column('temp_blks_written', sa.BigInteger(), nullable=True),
+    sa.Column('blk_read_time', sa.Float(), nullable=True),
+    sa.Column('blk_write_time', sa.Float(), nullable=True),
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
+    sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
+    sa.ForeignKeyConstraint(['snapshot_id'], ['snapshots.id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_index(op.f('ix_statement_stats_id'), 'statement_stats', ['id'], unique=False)
+    op.create_index(op.f('ix_statement_stats_queryid'), 'statement_stats', ['queryid'], unique=False)
+    op.create_index(op.f('ix_statement_stats_snapshot_id'), 'statement_stats', ['snapshot_id'], unique=False)
     # ### end Alembic commands ###
 
 
 def downgrade() -> None:
     # ### commands auto generated by Alembic - please adjust! ###
     # Temporarily comment out corresponding drop operations
-    # op.drop_index(op.f('ix_statement_stats_snapshot_id'), table_name='statement_stats')
-    # op.drop_index(op.f('ix_statement_stats_queryid'), table_name='statement_stats')
-    # op.drop_index(op.f('ix_statement_stats_id'), table_name='statement_stats')
-    # op.drop_table('statement_stats')
-    # op.drop_index(op.f('ix_session_activity_snapshot_id'), table_name='session_activity')
-    # op.drop_index(op.f('ix_session_activity_pid'), table_name='session_activity')
-    # op.drop_index(op.f('ix_session_activity_id'), table_name='session_activity')
-    # op.drop_table('session_activity')
-    # op.drop_index(op.f('ix_locks_snapshot_id'), table_name='locks')
-    # op.drop_index(op.f('ix_locks_pid'), table_name='locks')
-    # op.drop_index(op.f('ix_locks_id'), table_name='locks')
-    # op.drop_table('locks')
-    # op.drop_index(op.f('ix_db_objects_snapshot_id'), table_name='db_objects')
-    # op.drop_index(op.f('ix_db_objects_id'), table_name='db_objects')
-    # op.drop_table('db_objects')
-    # op.drop_index(op.f('ix_snapshots_id'), table_name='snapshots')
-    # op.drop_index(op.f('ix_snapshots_database_id'), table_name='snapshots')
-    # op.drop_table('snapshots')
+    op.drop_index(op.f('ix_statement_stats_snapshot_id'), table_name='statement_stats')
+    op.drop_index(op.f('ix_statement_stats_queryid'), table_name='statement_stats')
+    op.drop_index(op.f('ix_statement_stats_id'), table_name='statement_stats')
+    op.drop_table('statement_stats')
+    op.drop_index(op.f('ix_session_activity_snapshot_id'), table_name='session_activity')
+    op.drop_index(op.f('ix_session_activity_pid'), table_name='session_activity')
+    op.drop_index(op.f('ix_session_activity_id'), table_name='session_activity')
+    op.drop_table('session_activity')
+    op.drop_index(op.f('ix_locks_snapshot_id'), table_name='locks')
+    op.drop_index(op.f('ix_locks_pid'), table_name='locks')
+    op.drop_index(op.f('ix_locks_id'), table_name='locks')
+    op.drop_table('locks')
+    op.drop_index(op.f('ix_db_objects_snapshot_id'), table_name='db_objects')
+    op.drop_index(op.f('ix_db_objects_id'), table_name='db_objects')
+    op.drop_table('db_objects')
+    op.drop_index(op.f('ix_snapshots_id'), table_name='snapshots')
+    op.drop_index(op.f('ix_snapshots_database_id'), table_name='snapshots')
+    op.drop_table('snapshots')
     op.drop_index(op.f('ix_monitored_databases_name'), table_name='monitored_databases')
     op.drop_index(op.f('ix_monitored_databases_id'), table_name='monitored_databases')
     op.drop_table('monitored_databases')

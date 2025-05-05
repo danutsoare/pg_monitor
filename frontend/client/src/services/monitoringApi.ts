@@ -3,7 +3,41 @@
 import { LockInfo, ActivityPoint, DbObjectInfo } from '../types/monitoring'; // Import from shared types file
 
 // Base URL for your backend API - adjust if necessary
-const API_BASE_URL = '/api/monitoring';
+const API_BASE_URL = '/api/v1/monitoring';
+
+/**
+ * Converts a simple time range string (e.g., "1h", "6h", "24h", "7d")
+ * into start and end Date objects.
+ * @param timeRange - The simple time range string.
+ * @returns An object containing { startTime: Date, endTime: Date }.
+ */
+const convertTimeRangeToDates = (timeRange: string): { startTime: Date, endTime: Date } => {
+  const now = new Date();
+  let startTime = new Date(now);
+  const endTime = new Date(now); // End time is always 'now'
+
+  switch (timeRange) {
+    case '1h':
+      startTime.setHours(now.getHours() - 1);
+      break;
+    case '6h':
+      startTime.setHours(now.getHours() - 6);
+      break;
+    case '24h':
+      startTime.setDate(now.getDate() - 1);
+      break;
+    case '7d':
+      startTime.setDate(now.getDate() - 7);
+      break;
+    // Add more cases if needed
+    default:
+      // Default to 1 hour if range is unknown
+      startTime.setHours(now.getHours() - 1);
+      break;
+  }
+
+  return { startTime, endTime };
+};
 
 /**
  * Fetches lock information for a specific database connection.
@@ -33,15 +67,25 @@ export const getLocks = async (db_id: string): Promise<LockInfo[]> => {
 /**
  * Fetches time series activity data for a specific database connection.
  * @param db_id - The ID of the database connection to monitor.
- * @param timeRange - Optional: Specify the time range (e.g., '1h', '6h', '24h', '7d'). Defaults to a server-defined period.
+ * @param timeRange - Optional: Specify the time range (e.g., '1h', '6h', '24h', '7d'). Backend default if omitted.
  * @returns A promise that resolves to an array of ActivityPoint objects.
  */
 export const getActivity = async (db_id: string, timeRange?: string): Promise<ActivityPoint[]> => {
-  // Construct the URL, adding timeRange query parameter if provided
-  let url = `${API_BASE_URL}/${db_id}/activity`;
+  // Construct the URL
+  let url = `${API_BASE_URL}/activity/timeseries/${db_id}`; // Correct endpoint path
+
   if (timeRange) {
-    url += `?timeRange=${encodeURIComponent(timeRange)}`;
+    // Convert the simple time range string to Date objects
+    const { startTime, endTime } = convertTimeRangeToDates(timeRange);
+
+    // Format dates as ISO strings for the backend query parameters
+    const params = new URLSearchParams({
+      start_time: startTime.toISOString(),
+      end_time: endTime.toISOString(),
+    });
+    url += `?${params.toString()}`;
   }
+  // If no timeRange is provided, the backend will use its default range.
 
   const response = await fetch(url);
 
@@ -55,9 +99,17 @@ export const getActivity = async (db_id: string, timeRange?: string): Promise<Ac
     throw new Error(errorMsg);
   }
 
-  const data = await response.json();
-  // Optional: Add data validation here if needed
-  return data as ActivityPoint[];
+  const responseData = await response.json();
+  // Extract the actual array from the response object
+  if (!responseData || !Array.isArray(responseData.data)) {
+      console.error("Invalid response structure received from activity API:", responseData);
+      throw new Error("Invalid data structure received from server.");
+  }
+  // Ensure the nested array conforms to ActivityPoint[] structure
+  // Note: Backend returns { timestamp: datetime, count: int } in ActivityDataPoint.
+  // Frontend ActivityPoint expects { timestamp: string, active_sessions: number, etc. }
+  // We need to adapt the frontend type or backend response. For now, casting.
+  return responseData.data as ActivityPoint[];
 };
 
 /**

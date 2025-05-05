@@ -110,9 +110,11 @@ const ActivityPage: React.FC = () => {
             <YAxis />
             <Tooltip />
             <Legend />
-            <Line type="monotone" dataKey="active_sessions" name="Active" stroke="#8884d8" activeDot={{ r: 8 }} />
-            <Line type="monotone" dataKey="idle_sessions" name="Idle" stroke="#82ca9d" />
-            <Line type="monotone" dataKey="waiting_sessions" name="Waiting" stroke="#ffc658" />
+            <Line type="monotone" dataKey="count" name="Total Sessions" stroke="#8884d8" activeDot={{ r: 8 }} />
+            {/* Remove lines for keys that don't exist in the response */}
+            {/* <Line type="monotone" dataKey="active_sessions" name="Active" stroke="#8884d8" activeDot={{ r: 8 }} /> */}
+            {/* <Line type="monotone" dataKey="idle_sessions" name="Idle" stroke="#82ca9d" /> */}
+            {/* <Line type="monotone" dataKey="waiting_sessions" name="Waiting" stroke="#ffc658" /> */}
             {/* Add lines for other metrics if available */}
           </LineChart>
         </ResponsiveContainer>
