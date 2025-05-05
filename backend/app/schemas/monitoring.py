@@ -16,7 +16,7 @@ class ActivityTimeSeries(BaseModel):
     data: List[ActivityDataPoint]
 
     class Config:
-        orm_mode = True # Allow mapping from ORM objects
+        from_attributes = True # Allow mapping from ORM objects
 
 
 # Schema for detailed session activity information
@@ -47,7 +47,7 @@ class SessionDetail(BaseModel):
     backend_type: Optional[str] = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 # Schema for the list of session details response
@@ -88,7 +88,7 @@ class StatementStatDetail(BaseModel):
     blk_write_time: Optional[float] = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 # Schema for the list of statement stats response
@@ -113,7 +113,7 @@ class DbObjectDetail(BaseModel):
     toast_size_bytes: Optional[int] = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 # Schema for the list of database objects response
@@ -126,28 +126,35 @@ class DbObjectList(BaseModel):
 
 # Schema for individual lock information
 class LockDetail(BaseModel):
-    # Match fields from Lock model
-    id: int
+    # Based on frontend LockInfo and pg_locks structure
+    # Ensure fields match the data returned by the corresponding CRUD function
+    id: int # Assuming there's a primary key in the Lock model
     snapshot_id: int
-    locktype: Optional[str] = None
-    database: Optional[int] = None
-    relation: Optional[int] = None
-    page: Optional[int] = None
-    tuple: Optional[int] = None
-    virtualxid: Optional[str] = None
-    transactionid: Optional[str] = None
-    classid: Optional[int] = None
-    objid: Optional[int] = None
-    objsubid: Optional[int] = None
-    virtualtransaction: Optional[str] = None
+
+    # Fields corresponding to pg_locks or similar view
     pid: Optional[int] = None
+    relation: Optional[int] = None # Changed from relation_name: str to match model's relation: BigInteger (stores OID)
+    locktype: Optional[str] = None
     mode: Optional[str] = None
     granted: Optional[bool] = None
-    fastpath: Optional[bool] = None
-    # waitstart: Optional[datetime] = None # Add if needed and available in model
+    waitstart: Optional[str] = None # Changed from datetime to str to match model
+    query: Optional[str] = None         # The blocked or blocking query (NOTE: Field missing in current models.Lock)
+
+    # Add other relevant fields if available, e.g.:
+    # relation_oid: Optional[int] = None
+    # transactionid: Optional[str] = None # Representing xid as string
+    # virtualtransaction: Optional[str] = None
+    # virtualxid: Optional[str] = None
+    # tuple: Optional[str] = None # Representing tuple identifier
+    # page: Optional[int] = None
+    # classid: Optional[int] = None
+    # objid: Optional[int] = None
+    # objsubid: Optional[int] = None
+    # database_name: Optional[str] = None # If locks from multiple DBs are stored
 
     class Config:
-        orm_mode = True
+        # Enable ORM mode for automatic conversion from SQLAlchemy models (Pydantic v2 uses 'from_attributes')
+        from_attributes = True
 
 
 # Schema for the list of locks response
@@ -155,4 +162,7 @@ class LockList(BaseModel):
     db_id: int
     snapshot_id: int
     snapshot_time: datetime
-    locks: List[LockDetail] 
+    locks: List[LockDetail]
+
+
+# Add other monitoring-related schemas here... 

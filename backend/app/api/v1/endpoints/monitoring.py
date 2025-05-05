@@ -27,17 +27,20 @@ async def get_activity_timeseries(
     end_time: Optional[datetime] = Query(None, description="End time for the data range (ISO 8601 format)")
 ) -> Any:
     """
-    Get activity counts over time for a specific database.
+    Get time series activity data for a specific database within a specified time range.
+    If start_time or end_time are omitted, backend defaults might apply (e.g., last hour).
     """
-    # TODO: Add validation for db_id existence?
-    # Fetch data using the CRUD function
+    # Validate or default time range if necessary
+    # Fetch data using CRUD function
     activity_data = crud.monitoring.get_activity_timeseries_data(
-        db=db,
-        db_id=db_id,
-        start_time=start_time,
-        end_time=end_time
+        db=db, db_id=db_id, start_time=start_time, end_time=end_time
     )
 
+    if not activity_data:
+         # Return empty list if no data, maybe log this?
+         return schemas.ActivityTimeSeries(db_id=db_id, data=[]) # Return structure with empty data
+
+    # Assuming crud function returns data in the correct format for the schema
     return schemas.ActivityTimeSeries(db_id=db_id, data=activity_data)
 
 
@@ -145,14 +148,16 @@ async def get_latest_db_objects(
 
 
 @router.get("/locks/{db_id}/latest", response_model=schemas.LockList)
-async def get_latest_lock_info(
+async def get_latest_locks(
     *,
     db: Session = Depends(deps.get_db),
     db_id: int,
-    # TODO: Add filtering parameters? (e.g., granted=false, pid=...)
+    # Add Query parameters for filtering/sorting if needed later
+    # e.g., granted_only: bool = Query(False, description="Only show granted locks"),
+    # e.g., sort_by: Optional[str] = Query(None, description="Field to sort locks by")
 ) -> Any:
     """
-    Get lock and blocking information from the latest snapshot for a specific database.
+    Get lock information from the latest snapshot for a specific database.
     """
     latest_snapshot = crud.monitoring.get_latest_snapshot(db=db, db_id=db_id)
 
@@ -162,14 +167,20 @@ async def get_latest_lock_info(
             detail=f"No snapshot found for database ID {db_id}"
         )
 
-    locks = crud.monitoring.get_locks_by_snapshot(
+    # Placeholder for the actual CRUD function call
+    # This function needs to be implemented in crud/crud_monitoring.py
+    lock_details = crud.monitoring.get_locks_by_snapshot(
         db=db,
-        snapshot_id=latest_snapshot.id
+        snapshot_id=latest_snapshot.id,
+        # Pass any filter/sort parameters here
     )
 
+    # This schema (LockList and LockDetail) needs to be defined in schemas/monitoring.py
     return schemas.LockList(
         db_id=db_id,
         snapshot_id=latest_snapshot.id,
         snapshot_time=latest_snapshot.snapshot_time,
-        locks=locks
-    ) 
+        locks=lock_details # Assuming crud function returns a list compatible with LockDetail
+    )
+
+# Add other monitoring-related endpoints here as needed... 

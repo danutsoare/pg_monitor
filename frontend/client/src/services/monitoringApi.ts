@@ -45,7 +45,9 @@ const convertTimeRangeToDates = (timeRange: string): { startTime: Date, endTime:
  * @returns A promise that resolves to an array of LockInfo objects.
  */
 export const getLocks = async (db_id: string): Promise<LockInfo[]> => {
-  const response = await fetch(`${API_BASE_URL}/${db_id}/locks`);
+  // Construct the URL to match the new backend endpoint
+  const url = `${API_BASE_URL}/locks/${db_id}/latest`; // Use the '/latest' endpoint
+  const response = await fetch(url);
 
   if (!response.ok) {
     // Attempt to get more specific error info from response
@@ -61,7 +63,12 @@ export const getLocks = async (db_id: string): Promise<LockInfo[]> => {
   }
 
   const data = await response.json();
-  return data as LockInfo[]; // Assuming the API returns the data directly as an array
+  // Ensure the actual array is extracted from the response object
+  if (!data || !Array.isArray(data.locks)) {
+      console.error("Invalid response structure received from locks API:", data);
+      throw new Error("Invalid data structure received from locks API.");
+  }
+  return data.locks as LockInfo[]; // Return the nested 'locks' array
 };
 
 /**
@@ -118,7 +125,8 @@ export const getActivity = async (db_id: string, timeRange?: string): Promise<Ac
  * @returns A promise that resolves to an array of DbObjectInfo objects.
  */
 export const getDbObjects = async (db_id: string): Promise<DbObjectInfo[]> => {
-  const url = `${API_BASE_URL}/${db_id}/objects`;
+  // Construct URL to match the backend endpoint structure
+  const url = `${API_BASE_URL}/objects/${db_id}/latest`; // Use the '/latest' endpoint
   const response = await fetch(url);
 
   if (!response.ok) {
@@ -132,7 +140,12 @@ export const getDbObjects = async (db_id: string): Promise<DbObjectInfo[]> => {
   }
 
   const data = await response.json();
-  return data as DbObjectInfo[];
+  // Ensure the actual array is extracted from the response object
+  if (!data || !Array.isArray(data.objects)) {
+      console.error("Invalid response structure received from objects API:", data);
+      throw new Error("Invalid data structure received from objects API.");
+  }
+  return data.objects as DbObjectInfo[]; // Return the nested 'objects' array
 };
 
 // Add other monitoring API functions here as needed, e.g.:

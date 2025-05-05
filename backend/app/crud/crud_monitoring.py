@@ -138,7 +138,8 @@ def get_db_objects_by_snapshot(
 
     if sort_by_size:
         # Ensure nulls are treated consistently if size can be null
-        query = query.order_by(desc(models.DbObject.total_size_bytes.nullslast()))
+        # Apply desc() first, then nullslast()
+        query = query.order_by(desc(models.DbObject.total_size_bytes).nullslast())
     else:
         # Default sort order if not sorting by size
         query = query.order_by(models.DbObject.schema_name, models.DbObject.object_name)
