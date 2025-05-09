@@ -1,7 +1,8 @@
 from datetime import datetime
 from typing import List, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, model_validator
+from app.core.utils import format_bytes_to_pretty_str
 
 
 # Schema for a single time series data point
@@ -111,6 +112,18 @@ class DbObjectDetail(BaseModel):
     table_size_bytes: Optional[int] = None
     index_size_bytes: Optional[int] = None
     toast_size_bytes: Optional[int] = None
+    owner: Optional[str] = None
+    size_pretty: Optional[str] = Field(None, description="Human-readable size (e.g., '1.2 MiB')")
+
+    @model_validator(mode='before')
+    @classmethod
+    def calculate_size_pretty(cls, values):
+        if isinstance(values, dict):
+            total_size_bytes = values.get('total_size_bytes')
+            values['size_pretty'] = format_bytes_to_pretty_str(total_size_bytes)
+        elif hasattr(values, 'total_size_bytes'):
+            setattr(values, 'size_pretty', format_bytes_to_pretty_str(values.total_size_bytes))
+        return values
 
     class Config:
         from_attributes = True

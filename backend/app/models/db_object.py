@@ -18,11 +18,13 @@ class DbObject(BaseClass):
     # OID might be useful depending on queries used
     # oid = Column(BigInteger)
 
+    owner = Column(String, nullable=True) # Owner of the object (role name)
+
     # Size information
-    total_size_bytes = Column(BigInteger)  # pg_total_relation_size()
-    table_size_bytes = Column(BigInteger)  # pg_table_size()
-    index_size_bytes = Column(BigInteger)  # pg_indexes_size()
-    toast_size_bytes = Column(BigInteger)  # Size of the TOAST table, if any
+    total_size_bytes = Column(BigInteger, nullable=True)  # pg_total_relation_size(), nullable
+    table_size_bytes = Column(BigInteger, nullable=True)  # pg_table_size(), nullable
+    index_size_bytes = Column(BigInteger, nullable=True)  # pg_indexes_size(), nullable
+    toast_size_bytes = Column(BigInteger, nullable=True)  # Size of the TOAST table, if any, nullable
 
     # Relationships
     snapshot = relationship("Snapshot", back_populates="db_objects") 

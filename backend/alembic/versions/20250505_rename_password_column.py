@@ -19,18 +19,10 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    # Rename the column
-    op.alter_column('monitored_databases',
-                    'hashed_password',
-                    new_column_name='encrypted_password',
-                    existing_type=sa.String(),
-                    nullable=False)
+    # This operation was likely handled by the merged 'abcd' branch.
+    pass
 
 
 def downgrade() -> None:
-    # Rename the column back
-    op.alter_column('monitored_databases',
-                    'encrypted_password',
-                    new_column_name='hashed_password',
-                    existing_type=sa.String(),
-                    nullable=False) 
+    # Corresponding downgrade is also skipped.
+    pass 

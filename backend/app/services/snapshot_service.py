@@ -131,8 +131,8 @@ async def take_snapshot(db_conn_details: dict):
         # Query object sizes
         try:
             logger.info(f"Fetching object sizes for {db_name}...")
-            # Simplified query for broad compatibility
-            objects_query = '''
+            # Enhanced query to include owner
+            objects_query = """
                 SELECT
                     n.nspname AS schema_name,
                     c.relname AS object_name,
@@ -146,6 +146,7 @@ async def take_snapshot(db_conn_details: dict):
                         WHEN 'p' THEN 'partitioned table'
                         ELSE 'other'
                     END AS object_type,
+                    pg_catalog.pg_get_userbyid(c.relowner) AS owner, -- Fetch owner name
                     pg_total_relation_size(c.oid) AS total_size_bytes,
                     pg_relation_size(c.oid) AS table_size_bytes,
                     pg_indexes_size(c.oid) AS index_size_bytes
@@ -153,10 +154,11 @@ async def take_snapshot(db_conn_details: dict):
                 JOIN pg_namespace n ON n.oid = c.relnamespace
                 WHERE n.nspname NOT IN ('pg_catalog', 'information_schema')
                   AND n.nspname !~ '^pg_toast'
-                  AND c.relkind IN ('r', 'p', 'm', 'i') -- Tables, Part. Tables, MViews, Indexes
-                ORDER BY total_size_bytes DESC
+                  -- Include more object types if needed, but focus on those with size
+                  AND c.relkind IN ('r', 'p', 'm', 'i', 'S', 'v', 'f') 
+                ORDER BY total_size_bytes DESC NULLS LAST -- Ensure consistent ordering with NULL sizes
                 LIMIT 5000; -- Limit results to avoid overwhelming data
-            '''
+            """
             object_records = await conn.fetch(objects_query)
             logger.info(f"Fetched {len(object_records)} object size records from {db_name}.")
         except asyncpg.PostgresError as e:
@@ -288,21 +290,30 @@ async def take_snapshot(db_conn_details: dict):
 
                 # 7. Process and store DbObject records
                 for record in object_records:
-                    total_size = record.get('total_size_bytes', 0)
-                    table_size = record.get('table_size_bytes', 0)
-                    index_size = record.get('index_size_bytes', 0)
-                    # Calculate toast size
-                    toast_size = total_size - table_size - index_size
+                    total_size = record.get('total_size_bytes') # Keep as None if not available
+                    table_size = record.get('table_size_bytes')
+                    index_size = record.get('index_size_bytes')
+                    toast_size = None
+
+                    # Calculate toast size only if total, table, and index sizes are available
+                    if total_size is not None and table_size is not None and index_size is not None:
+                         # Calculate based on relation size and index size for tables/mviews
+                         if record.get('object_type') in ['table', 'materialized view', 'partitioned table']:
+                             # toast size is often implicitly included in pg_total_relation_size
+                             # pg_total_relation_size = pg_relation_size + pg_indexes_size + toast_size
+                             calculated_toast = total_size - table_size - index_size
+                             toast_size = max(0, calculated_toast) # Ensure non-negative
 
                     db_object = DbObject(
                         snapshot_id=snapshot_id,
                         object_type=record.get('object_type'),
                         schema_name=record.get('schema_name'),
                         object_name=record.get('object_name'),
+                        owner=record.get('owner'), # Add owner from query result
                         total_size_bytes=total_size,
                         table_size_bytes=table_size,
                         index_size_bytes=index_size,
-                        toast_size_bytes=max(0, toast_size) # Ensure non-negative
+                        toast_size_bytes=toast_size
                     )
                     app_db.add(db_object)
                 objects_added = len(object_records)
