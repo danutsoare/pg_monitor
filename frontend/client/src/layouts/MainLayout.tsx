@@ -5,7 +5,7 @@ import {
   LockOutlined,
   AreaChartOutlined,
   TableOutlined,
-  TrophyOutlined,
+  // TrophyOutlined,
   // TeamOutlined,
   // UserOutlined,
 } from '@ant-design/icons';
@@ -35,39 +35,45 @@ function getItem(
   } as MenuItem;
 }
 
-const generateMenuItems = (selectedDbId: string | null): MenuItem[] => [
-  getItem(<Link to="/">Dashboard</Link>, '/', <PieChartOutlined />),
-  getItem(<Link to="/connections">Connections</Link>, '/connections', <DatabaseOutlined />),
-  getItem(
-    selectedDbId ? <Link to={`/activity/${selectedDbId}`}>Activity</Link> : 'Activity',
-    selectedDbId ? `/activity/${selectedDbId}` : '/activity',
-    <AreaChartOutlined />,
-    undefined,
-    !selectedDbId
-  ),
-  getItem(
-    selectedDbId ? <Link to={`/locks/${selectedDbId}`}>Locks</Link> : 'Locks',
-    selectedDbId ? `/locks/${selectedDbId}` : '/locks',
-    <LockOutlined />,
-    undefined,
-    !selectedDbId
-  ),
-  getItem(
-    selectedDbId ? <Link to={`/objects/${selectedDbId}`}>Objects</Link> : 'Objects',
-    selectedDbId ? `/objects/${selectedDbId}` : '/objects',
-    <TableOutlined />,
-    undefined,
-    !selectedDbId
-  ),
-  getItem(
-    selectedDbId ? <Link to={`/top-objects/${selectedDbId}`}>Top Objects</Link> : 'Top Objects',
-    selectedDbId ? `/top-objects/${selectedDbId}` : '/top-objects',
-    <TrophyOutlined />,
-    undefined,
-    !selectedDbId
-  ),
-  // Add more monitoring pages here using selectedDbId
-];
+const generateMenuItems = (selectedDbId: string | null): MenuItem[] => {
+  const items: MenuItem[] = [
+    getItem(<Link to="/">Dashboard</Link>, '/', <PieChartOutlined />),
+    getItem(
+      selectedDbId ? <Link to={`/activity/${selectedDbId}`}>Activity</Link> : 'Activity',
+      selectedDbId ? `/activity/${selectedDbId}` : '/activity',
+      <AreaChartOutlined />,
+      undefined,
+      !selectedDbId
+    ),
+    getItem(
+      selectedDbId ? <Link to={`/locks/${selectedDbId}`}>Locks</Link> : 'Locks',
+      selectedDbId ? `/locks/${selectedDbId}` : '/locks',
+      <LockOutlined />,
+      undefined,
+      !selectedDbId
+    ),
+    getItem(
+      selectedDbId ? <Link to={`/objects/${selectedDbId}`}>Objects</Link> : 'Objects',
+      selectedDbId ? `/objects/${selectedDbId}` : '/objects',
+      <TableOutlined />,
+      undefined,
+      !selectedDbId
+    ),
+    // getItem(
+    //   selectedDbId ? <Link to={`/top-objects/${selectedDbId}`}>Top Objects</Link> : 'Top Objects',
+    //   selectedDbId ? `/top-objects/${selectedDbId}` : '/top-objects',
+    //   <TrophyOutlined />,
+    //   undefined,
+    //   !selectedDbId
+    // ),
+    // Add more monitoring pages here using selectedDbId
+  ];
+
+  // Add Connections at the end
+  items.push(getItem(<Link to="/connections">Connections</Link>, '/connections', <DatabaseOutlined />));
+
+  return items;
+};
 
 const MainLayout: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
@@ -152,8 +158,9 @@ const MainLayout: React.FC = () => {
   return (
     <Layout style={{ minHeight: '100vh' }}>
       <Sider collapsible collapsed={collapsed} onCollapse={(value: boolean) => setCollapsed(value)}>
-        <div style={{ height: '32px', margin: '16px', background: 'rgba(255, 255, 255, 0.2)', borderRadius: '6px', textAlign: 'center', lineHeight: '32px', color: 'white', overflow: 'hidden' }}>
-          PG Mon
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '32px', margin: '16px', background: 'rgba(255, 255, 255, 0.2)', borderRadius: '6px', textAlign: 'center', lineHeight: '32px', color: 'white', overflow: 'hidden' }}>
+          <DatabaseOutlined style={{ marginRight: collapsed ? '0px' : '8px', fontSize: '18px' }} />
+          {!collapsed && <span style={{ whiteSpace: 'nowrap' }}>PG Pulse</span>}
         </div>
         <Menu theme="dark" selectedKeys={[location.pathname]} mode="inline" items={menuItems} />
       </Sider>
@@ -197,7 +204,7 @@ const MainLayout: React.FC = () => {
           </div>
         </Content>
         <Footer style={{ textAlign: 'center' }}>
-          PostgreSQL Monitor ©{new Date().getFullYear()}
+          PG Pulse ©{new Date().getFullYear()}
         </Footer>
       </Layout>
     </Layout>
