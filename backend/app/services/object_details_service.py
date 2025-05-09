@@ -133,19 +133,39 @@ async def get_constraint_details(conn: asyncpg.Connection, schema_name: str, tab
 
 async def get_row_count(conn: asyncpg.Connection, schema_name: str, table_name: str) -> Optional[int]:
     """Fetches the row count for a table."""
+    # formatted_sql = "" # No longer needed to initialize here
     try:
-        # Ensure schema and table names are properly quoted to prevent SQL injection
-        # if passed directly into an f-string. Using parameters is safer.
-        # However, COUNT(*) on a fully qualified name constructed with $1.$2 doesn't work directly in asyncpg like that.
-        # We need to quote identifiers properly if constructing the query string.
-        # For now, this simple version assumes table_name doesn't need complex quoting.
-        # A more robust solution would use format() with an SQL identifier quoter.
-        quoted_schema_name = asyncpg.utils.quote_ident(schema_name)
-        quoted_table_name = asyncpg.utils.quote_ident(table_name)
-        count = await conn.fetchval(f'SELECT COUNT(*) FROM {quoted_schema_name}.{quoted_table_name}')
+        # Use PostgreSQL's format function with %I for safe identifier quoting.
+        # The schema_name and table_name are passed as arguments to the initial fetchval,
+        # which constructs the final query string.
+        # This is a two-step process:
+        # 1. Construct the SQL string safely using server-side format().
+        # 2. Execute the constructed SQL string.
+        
+        # Step 1: Construct the query string for counting rows
+        # format('%I.%I', schema, table) safely quotes both schema and table name
+        # e.g., format('SELECT COUNT(*) FROM %I.%I', 'public', 'my table')
+        # becomes: SELECT COUNT(*) FROM "public"."my table"
+        count_query_template = "SELECT format('SELECT COUNT(*) FROM %I.%I', $1::TEXT, $2::TEXT);"
+        
+        final_count_query_str = await conn.fetchval(count_query_template, schema_name, table_name)
+
+        if not final_count_query_str:
+            logger.error(f"Could not construct row count query string for {schema_name}.{table_name} using format().")
+            return None
+
+        logger.info(f"Executing dynamically constructed row count query: {final_count_query_str}")
+        
+        # Step 2: Execute the constructed query string
+        count = await conn.fetchval(final_count_query_str)
+        
         return int(count) if count is not None else None
+        
+    except asyncpg.PostgresError as e: # Catch specific asyncpg errors
+        logger.error(f"PostgresError fetching row count for {schema_name}.{table_name}: {e}. Query: {final_count_query_str if 'final_count_query_str' in locals() else 'not constructed'}")
+        return None
     except Exception as e:
-        logger.error(f"Error fetching row count for {schema_name}.{table_name}: {e}")
+        logger.error(f"Unexpected error fetching row count for {schema_name}.{table_name}: {e}. Query: {final_count_query_str if 'final_count_query_str' in locals() else 'not constructed'}")
         return None
 
 async def get_view_definition(conn: asyncpg.Connection, schema_name: str, view_name: str) -> Optional[str]:
@@ -230,9 +250,6 @@ async def get_object_full_details(
 
     if object_type in ['table', 'view', 'materialized view', 'foreign table', 'partitioned table']:
         details.columns = await get_column_details(conn, schema_name, object_name)
-
-    if object_type in ['table', 'materialized view', 'partitioned table']:
-        details.row_count = await get_row_count(conn, schema_name, object_name)
 
     if object_type in ['table', 'partitioned table']:
         details.indexes = await get_index_details(conn, schema_name, object_name)

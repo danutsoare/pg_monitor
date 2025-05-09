@@ -195,6 +195,43 @@ export const getDbObjectDetails = async (
   return data as ObjectFullDetails;
 };
 
+/**
+ * Fetches the row count for a specific database object.
+ * @param db_id - The ID of the database connection.
+ * @param schema_name - The schema name of the object.
+ * @param object_name - The name of the object.
+ * @returns A promise that resolves to an object containing the row_count.
+ */
+export const getDbObjectRowCount = async (
+  db_id: string,
+  schema_name: string,
+  object_name: string
+): Promise<{ row_count: number | null }> => {
+  const url = `${API_BASE_URL}/objects/${encodeURIComponent(db_id)}/${encodeURIComponent(schema_name)}/${encodeURIComponent(object_name)}/rowcount`;
+  const response = await fetch(url);
+
+  if (!response.ok) {
+    let errorMsg = `Failed to fetch row count for object ${schema_name}.${object_name}`;
+    try {
+      const errorData = await response.json();
+      errorMsg = errorData.detail || errorMsg;
+    } catch (e) { /* Ignore */ }
+    console.error(`Error fetching row count for ${schema_name}.${object_name} (DB ${db_id}): ${response.status} ${response.statusText}, Message: ${errorMsg}`);
+    throw new Error(errorMsg);
+  }
+  const data = await response.json();
+  if (data === null || data.row_count === undefined) { // Check if data or row_count is null/undefined
+    // If backend returns null for row_count (e.g. on error), it's valid. 
+    // If data is completely null or row_count property is missing, that's an issue.
+    // However, endpoint is defined to return {row_count: Optional[int]}, so data itself shouldn't be null unless server failed to form JSON.
+     if (data === null || typeof data.row_count === 'undefined') { // more specific check
+        console.error("Invalid or empty response structure received from object row count API:", data);
+        throw new Error("Invalid data structure received from object row count API.");
+     }
+  }
+  return data as { row_count: number | null };
+};
+
 // Add other monitoring API functions here as needed, e.g.:
 // export const getActivity = async (db_id: string) => { ... };
 // export const getStatementStats = async (db_id: string) => { ... };

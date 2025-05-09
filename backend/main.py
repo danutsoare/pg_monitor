@@ -4,10 +4,17 @@ from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
 import logging
 import sys
+import asyncpg # Added for version logging
 
 from app.core.config import settings # Keep settings import if needed
 from app.scheduler import init_scheduler, shutdown_scheduler
 from app.api.api import api_router # Import the main API router
+
+# Early logging setup or basic config if needed before full app setup
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+logger.info(f"asyncpg version: {asyncpg.__version__}") # Added logging for asyncpg version
 
 # --- Logging Configuration ---
 log_formatter = logging.Formatter("%(asctime)s [%(levelname)s] %(name)s: %(message)s")

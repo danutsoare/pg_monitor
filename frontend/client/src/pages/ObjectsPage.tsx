@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
-import { Table, Alert, Typography, Input, Tag, Modal, Spin, Descriptions, List, Card, Empty } from 'antd';
+import { Table, Alert, Typography, Input, Tag, Modal, Spin, Descriptions, List, Card, Empty, Button } from 'antd';
 import type { ColumnsType, TableProps } from 'antd/es/table';
-import { getDbObjects, getDbObjectDetails } from '../services/monitoringApi';
+import { getDbObjects, getDbObjectDetails, getDbObjectRowCount } from '../services/monitoringApi';
 import { DbObjectInfo, ObjectFullDetails, ColumnDetail, IndexDetail, ConstraintDetail } from '../types/monitoring';
 
 const { Title, Text, Paragraph } = Typography;
@@ -34,6 +34,11 @@ const ObjectsPage: React.FC = () => {
   const [isDetailsModalVisible, setIsDetailsModalVisible] = useState<boolean>(false);
   const [detailsLoading, setDetailsLoading] = useState<boolean>(false);
   const [detailsError, setDetailsError] = useState<string | null>(null);
+
+  // State for on-demand row count
+  const [manualRowCount, setManualRowCount] = useState<number | null | undefined>(undefined);
+  const [isRowCountLoading, setIsRowCountLoading] = useState<boolean>(false);
+  const [rowCountError, setRowCountError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchObjects = async () => {
@@ -95,6 +100,10 @@ const ObjectsPage: React.FC = () => {
     setSelectedObjectForDetails(null); // Clear selection
     setObjectDetails(null); // Clear details
     setDetailsError(null); // Clear error
+    // Reset row count states as well
+    setManualRowCount(undefined);
+    setIsRowCountLoading(false);
+    setRowCountError(null);
   };
 
   // Memoized filtering logic - THIS WAS IMPORTANT AND SHOULD BE PRESERVED
@@ -183,6 +192,28 @@ const ObjectsPage: React.FC = () => {
     },
   };
 
+  const handleGetRowCount = async () => {
+    if (!selectedObjectForDetails || !db_id) return;
+
+    setIsRowCountLoading(true);
+    setRowCountError(null);
+    setManualRowCount(undefined); // Reset before fetching
+
+    try {
+      const result = await getDbObjectRowCount(
+        db_id,
+        selectedObjectForDetails.schema_name,
+        selectedObjectForDetails.object_name
+      );
+      setManualRowCount(result.row_count);
+    } catch (err) {
+      setRowCountError(err instanceof Error ? err.message : 'Failed to fetch row count.');
+      setManualRowCount(null); // Indicate error or no data explicitly
+    } finally {
+      setIsRowCountLoading(false);
+    }
+  };
+
   if (!db_id) {
      return <Alert message="Error" description="No database selected. Please select a database first." type="error" showIcon />;
   }
@@ -221,9 +252,10 @@ const ObjectsPage: React.FC = () => {
                 <Descriptions.Item label="Name">{objectDetails.object_name}</Descriptions.Item>
                 <Descriptions.Item label="Type">{objectDetails.object_type}</Descriptions.Item>
                 <Descriptions.Item label="Owner">{objectDetails.owner ?? '-'}</Descriptions.Item>
-                {objectDetails.row_count !== null && objectDetails.row_count !== undefined && (
+                {/* Row count display removed from here, will be handled by button and new state */}
+                {/* {objectDetails.row_count !== null && objectDetails.row_count !== undefined && (
                   <Descriptions.Item label="Row Count">{objectDetails.row_count.toLocaleString()}</Descriptions.Item>
-                )}
+                )} */}
                 {objectDetails.access_method && (
                   <Descriptions.Item label="Access Method">{objectDetails.access_method}</Descriptions.Item>
                 )}
@@ -231,6 +263,35 @@ const ObjectsPage: React.FC = () => {
                     <Descriptions.Item label="Options" span={2}>{objectDetails.options.join(', ')}</Descriptions.Item>
                 )}
               </Descriptions>
+
+              {/* On-demand Row Count Section */}
+              {(objectDetails.object_type === 'table' || 
+                objectDetails.object_type === 'materialized view' || 
+                objectDetails.object_type === 'partitioned table') && (
+                <div style={{ marginTop: '16px', padding: '12px', border: '1px solid #f0f0f0', borderRadius: '2px' }}>
+                  <Text strong>Row Count: </Text>
+                  {isRowCountLoading ? (
+                    <Spin size="small" style={{ marginLeft: '8px' }} />
+                  ) : manualRowCount !== undefined && manualRowCount !== null ? (
+                    <Text style={{ marginLeft: '8px' }}>{manualRowCount.toLocaleString()}</Text>
+                  ) : manualRowCount === null && rowCountError ? (
+                     <Text type="danger" style={{ marginLeft: '8px' }}>Error fetching</Text>
+                  ) : (
+                    <Text style={{ marginLeft: '8px', color: '#888' }}>-</Text>
+                  )}
+                  <Button 
+                    onClick={handleGetRowCount} 
+                    loading={isRowCountLoading}
+                    size="small"
+                    style={{ marginLeft: '16px' }}
+                  >
+                    Get Row Count
+                  </Button>
+                  {rowCountError && !isRowCountLoading && (
+                    <Alert message={rowCountError} type="error" showIcon style={{ marginTop: '8px', fontSize: 'small', padding: '4px 8px' }} />
+                  )}
+                </div>
+              )}
 
               {objectDetails.view_definition && (
                 <Card title="View Definition" style={{ marginTop: 16 }} size="small">

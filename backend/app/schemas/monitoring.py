@@ -250,6 +250,13 @@ class ObjectFullDetails(BaseModel):
     class Config:
         from_attributes = True
 
+# New schema for row count response
+class ObjectRowCount(BaseModel):
+    row_count: Optional[int] = None
+
+    class Config:
+        from_attributes = True
+
 # End of new schemas
 
 # Add other monitoring-related schemas here... 

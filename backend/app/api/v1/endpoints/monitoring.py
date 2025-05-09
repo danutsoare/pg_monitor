@@ -239,4 +239,51 @@ async def get_object_full_details_endpoint(
         if conn:
             await conn.close()
 
+# New endpoint for fetching row count specifically
+@router.get("/objects/{db_id}/{schema_name}/{object_name}/rowcount", response_model=Optional[schemas.monitoring.ObjectRowCount]) # Define ObjectRowCount in schemas
+async def get_object_row_count_endpoint(
+    *,
+    app_db: Session = Depends(deps.get_db),
+    db_id: int,
+    schema_name: str,
+    object_name: str,
+    # No object_type needed as this is specifically for tables/views that support row counts
+) -> Any:
+    """
+    Get the row count for a specific database object (table, materialized view).
+    """
+    db_conn_details_model = crud.connection.get_connection(db=app_db, connection_id=db_id)
+    if not db_conn_details_model:
+        raise HTTPException(status_code=404, detail=f"Monitored database with ID {db_id} not found.")
+
+    db_conn_params = {
+        "host": db_conn_details_model.hostname,
+        "port": db_conn_details_model.port,
+        "user": db_conn_details_model.username,
+        "password": decrypt(db_conn_details_model.encrypted_password),
+        "database": db_conn_details_model.db_name,
+        "timeout": 10
+    }
+
+    conn = None
+    try:
+        conn = await asyncpg.connect(**db_conn_params)
+        # Assuming object_details_service.get_row_count handles tables/views correctly
+        row_count = await object_details_service.get_row_count(
+            conn=conn, 
+            schema_name=schema_name, 
+            table_name=object_name # Parameter name in get_row_count is table_name
+        )
+        # The schema ObjectRowCount will simply be { "row_count": Optional[int] }
+        return schemas.monitoring.ObjectRowCount(row_count=row_count)
+    except asyncpg.PostgresError as e:
+        # Log specific pg error: logger.error(f"DB error fetching row count for {schema_name}.{object_name}: {e}", exc_info=True)
+        raise HTTPException(status_code=503, detail=f"Database error when fetching row count: {e}")
+    except Exception as e:
+        # Log general error: logger.error(f"Error fetching row count for {schema_name}.{object_name}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"An unexpected error occurred while fetching row count: {e}")
+    finally:
+        if conn:
+            await conn.close()
+
 # Add other monitoring-related endpoints here as needed... 
