@@ -178,4 +178,78 @@ class LockList(BaseModel):
     locks: List[LockDetail]
 
 
+# --- Detailed Object Information Schemas ---
+
+class ColumnDetail(BaseModel):
+    column_name: str
+    data_type: str
+    collation: Optional[str] = None
+    is_nullable: bool # Changed from YES/NO to bool
+    column_default: Optional[str] = None
+    storage: Optional[str] = None
+    compression: Optional[str] = None # For toast-eligible types
+    stats_target: Optional[int] = None
+    description: Optional[str] = None
+    # Raw pg_attribute fields, might be useful for advanced display
+    # attrelid: int # OID of the table this column belongs to
+    # attnum: int # Number of the column (1-based)
+    # atttypid: int # OID of the column's data type
+    # attlen: int # Length of the data type
+    # atttypmod: int # Type-specific data supplied at table creation time (e.g., max length for varchar)
+    # attnotnull: bool
+    # atthasdef: bool # Has a default value
+    # attoptions: Optional[List[str]] = None # Column-specific options
+    # attfdwoptions: Optional[List[str]] = None # Column-specific FDW options
+
+
+class IndexDetail(BaseModel):
+    index_name: str
+    index_definition: str # e.g., CREATE INDEX ... or "PRIMARY KEY, btree (col)"
+    is_primary_key: bool = False
+    is_unique: bool = False
+    index_type: str # e.g., btree, hash, gist, gin
+    # Might add columns covered by the index if easily obtainable
+
+
+class ConstraintDetail(BaseModel):
+    constraint_name: str
+    constraint_type: str # e.g., PRIMARY KEY, FOREIGN KEY, UNIQUE, CHECK
+    definition: str # For CHECK constraints, the expression; for FK, the referenced table/cols
+    # For FKs, might include referenced_table, referenced_columns, on_update, on_delete actions
+
+
+class ObjectFullDetails(BaseModel):
+    schema_name: str
+    object_name: str
+    object_type: str # table, view, materialized view, index, sequence etc.
+    owner: Optional[str] = None
+    
+    # For Tables/Views/Materialized Views
+    columns: Optional[List[ColumnDetail]] = None
+    row_count: Optional[int] = None # For tables, materialized views
+    
+    # For Tables
+    indexes: Optional[List[IndexDetail]] = None
+    constraints: Optional[List[ConstraintDetail]] = None
+    access_method: Optional[str] = None # e.g., heap, heap with OID_column, etc.
+    options: Optional[List[str]] = None # e.g., fillfactor=100, autovacuum_enabled=true
+
+    # For Indexes (some info might be redundant if object_type is 'index')
+    # index_specific_detail: Optional[IndexDetail] = None # If we want to embed directly for type 'index'
+    
+    # For Views
+    view_definition: Optional[str] = None
+    
+    # For Sequences
+    # sequence_details: Optional[SequenceDetail] = None # TODO: Add if needed
+
+    # General metadata, if available
+    description: Optional[str] = None
+    # Could add more specific fields as identified by psql \d+ for different object types
+
+    class Config:
+        from_attributes = True
+
+# End of new schemas
+
 # Add other monitoring-related schemas here... 

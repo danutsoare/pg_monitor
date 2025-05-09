@@ -6,6 +6,9 @@ from datetime import datetime
 from app.api import deps
 from app import schemas
 from app import crud
+from app.services import object_details_service
+import asyncpg
+from app.core.security import decrypt
 
 router = APIRouter()
 
@@ -182,5 +185,58 @@ async def get_latest_locks(
         snapshot_time=latest_snapshot.snapshot_time,
         locks=lock_details # Assuming crud function returns a list compatible with LockDetail
     )
+
+@router.get("/objects/{db_id}/{schema_name}/{object_name}/details", response_model=Optional[schemas.monitoring.ObjectFullDetails])
+async def get_object_full_details_endpoint(
+    *,
+    app_db: Session = Depends(deps.get_db),
+    db_id: int,
+    schema_name: str,
+    object_name: str,
+    object_type: str, # Type of the object (table, view, index, etc.)
+    owner: Optional[str] = None # Owner might be passed from the client if already known
+) -> Any:
+    """
+    Get comprehensive details for a specific database object (table, view, index, etc.).
+    """
+    db_conn_details_model = crud.connection.get_connection(db=app_db, connection_id=db_id)
+    if not db_conn_details_model:
+        raise HTTPException(status_code=404, detail=f"Monitored database with ID {db_id} not found.")
+
+    # Convert SQLAlchemy model to dict for asyncpg
+    db_conn_params = {
+        "host": db_conn_details_model.hostname,
+        "port": db_conn_details_model.port,
+        "user": db_conn_details_model.username,
+        "password": decrypt(db_conn_details_model.encrypted_password),
+        "database": db_conn_details_model.db_name,
+        "timeout": 10 # Connection timeout
+    }
+
+    conn = None
+    try:
+        conn = await asyncpg.connect(**db_conn_params)
+        details = await object_details_service.get_object_full_details(
+            conn=conn, 
+            schema_name=schema_name, 
+            object_name=object_name, 
+            object_type=object_type,
+            owner=owner # Pass owner if provided by client (e.g. from the existing table row)
+        )
+        if not details:
+            # This case might mean the object wasn't found by the service function, 
+            # or an error occurred during detail fetching that was logged but returned None.
+            raise HTTPException(status_code=404, detail=f"{object_type.capitalize()} '{schema_name}.{object_name}' not found or details could not be fetched.")
+        return details
+    except asyncpg.PostgresError as e:
+        # Handle specific database connection or query errors
+        raise HTTPException(status_code=503, detail=f"Database error when connecting to or querying monitored DB: {e}")
+    except Exception as e:
+        # Handle other unexpected errors
+        # Log the error for debugging: logger.error(f"Error fetching object details: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {e}")
+    finally:
+        if conn:
+            await conn.close()
 
 # Add other monitoring-related endpoints here as needed... 

@@ -1,6 +1,11 @@
 // Defines the structure for API calls related to database monitoring data.
 
-import { LockInfo, ActivityPoint, DbObjectInfo } from '../types/monitoring'; // Import from shared types file
+import { 
+  LockInfo, 
+  ActivityPoint, 
+  DbObjectInfo, 
+  ObjectFullDetails
+} from '../types/monitoring'; // Import from shared types file
 
 // Base URL for your backend API - adjust if necessary
 const API_BASE_URL = '/api/v1/monitoring';
@@ -146,6 +151,48 @@ export const getDbObjects = async (db_id: string): Promise<DbObjectInfo[]> => {
       throw new Error("Invalid data structure received from objects API.");
   }
   return data.objects as DbObjectInfo[]; // Return the nested 'objects' array
+};
+
+/**
+ * Fetches detailed information for a specific database object.
+ * @param db_id - The ID of the database connection.
+ * @param schema_name - The schema name of the object.
+ * @param object_name - The name of the object.
+ * @param object_type - The type of the object (e.g., 'table', 'view').
+ * @param owner - Optional: The owner of the object, can be passed to avoid a refetch if known.
+ * @returns A promise that resolves to the ObjectFullDetails.
+ */
+export const getDbObjectDetails = async (
+  db_id: string, 
+  schema_name: string, 
+  object_name: string, 
+  object_type: string,
+  owner?: string // Optional owner
+): Promise<ObjectFullDetails> => {
+  // Construct URL, encoding path parameters
+  let url = `${API_BASE_URL}/objects/${encodeURIComponent(db_id)}/${encodeURIComponent(schema_name)}/${encodeURIComponent(object_name)}/details?object_type=${encodeURIComponent(object_type)}`;
+  if (owner) {
+    url += `&owner=${encodeURIComponent(owner)}`;
+  }
+  
+  const response = await fetch(url);
+
+  if (!response.ok) {
+    let errorMsg = `Failed to fetch details for object ${schema_name}.${object_name}`;
+    try {
+      const errorData = await response.json();
+      errorMsg = errorData.detail || errorMsg;
+    } catch (e) { /* Ignore if response is not JSON */ }
+    console.error(`Error fetching object details for ${schema_name}.${object_name} (DB ${db_id}): ${response.status} ${response.statusText}, Message: ${errorMsg}`);
+    throw new Error(errorMsg);
+  }
+
+  const data = await response.json();
+  if (!data) { // Check if data itself is null or undefined, or not matching the expected structure
+      console.error("Invalid or empty response structure received from object details API:", data);
+      throw new Error("Invalid data structure received from object details API.");
+  }
+  return data as ObjectFullDetails;
 };
 
 // Add other monitoring API functions here as needed, e.g.:
